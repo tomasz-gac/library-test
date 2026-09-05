@@ -3,9 +3,11 @@ package com.tgac.library;
 // ABOUTME: The library domain facade — an immutable fact base with commands
 // ABOUTME: that append events and queries answered relationally by the engine.
 
+import static com.tgac.logic.goals.Goal.defer;
 import static com.tgac.logic.unification.LVal.lval;
 import static com.tgac.logic.unification.LVar.lvar;
 
+import com.tgac.logic.aggregate.Aggregate;
 import com.tgac.logic.unification.Reified;
 import com.tgac.logic.unification.Unifiable;
 import com.tgac.pldb.inmemory.Database;
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Library {
+
+	public static final int LOAN_LIMIT = 3;
 
 	private final Database db;
 	private final Rules rules;
@@ -58,6 +62,9 @@ public final class Library {
 		if (!isAvailable(copyId)) {
 			return Try.failure(new IllegalStateException("copy not available: " + copyId));
 		}
+		if (activeLoanCount(memberId) >= LOAN_LIMIT) {
+			return Try.failure(new IllegalStateException("member at loan limit: " + memberId));
+		}
 		return Try.success(with(Schema.loan.fact(loanId, copyId, memberId, dueDay)));
 	}
 
@@ -78,6 +85,15 @@ public final class Library {
 		return rules.availableCopy.exists(lval(copyId), i).solve(i).findAny().isPresent();
 	}
 
+	private int activeLoanCount(int memberId) {
+		Unifiable<Integer> n = lvar();
+		return Aggregate.<Integer>count(l -> defer(() -> {
+			Unifiable<Integer> c = lvar();
+			Unifiable<Integer> d = lvar();
+			return rules.activeLoan.exists(l, c, lval(memberId), d);
+		}), n).solve(n).findFirst().map(Reified::get).orElse(0);
+	}
+
 	private boolean hasActiveLoan(int loanId) {
 		Unifiable<Integer> c = lvar();
 		Unifiable<Integer> m = lvar();
@@ -95,6 +111,11 @@ public final class Library {
 	public List<Integer> availableCopies(String isbn) {
 		Unifiable<Integer> c = lvar();
 		return values(rules.availableCopy.exists(c, lval(isbn)).solve(c));
+	}
+
+	public List<Integer> overdueLoans(int today) {
+		Unifiable<Integer> l = lvar();
+		return values(rules.overdue.exists(l, lval(today)).solve(l));
 	}
 
 	public List<String> titlesBy(String author) {

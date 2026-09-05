@@ -3,6 +3,7 @@ package com.tgac.library;
 // ABOUTME: The derived relations (IDB) over one fact base: active loans by
 // ABOUTME: negation over return events, availability by negation over loans.
 
+import static com.tgac.logic.finitedomain.FiniteDomain.lss;
 import static com.tgac.logic.goals.Goal.defer;
 import static com.tgac.logic.nogoods.Exclusion.exclude;
 import static com.tgac.logic.unification.LVar.lvar;
@@ -19,6 +20,8 @@ final class Rules {
 			Relations.relation("onLoan", Schema.copyId);
 	private static final Relations._2<Integer, String> availableCopyRel =
 			Relations.relation("availableCopy", Schema.copyId, Schema.isbn);
+	private static final Relations._2<Integer, Integer> overdueRel =
+			Relations.relation("overdue", Schema.loanId, Schema.day);
 
 	/** loan without a return event. */
 	final Relations._4<Integer, Integer, Integer, Integer>.Derived activeLoan;
@@ -33,6 +36,9 @@ final class Rules {
 	/** copy not on loan. */
 	final Relations._2<Integer, String>.Derived availableCopy;
 
+	/** active loan whose due day lies strictly before the given day. */
+	final Relations._2<Integer, Integer>.Derived overdue;
+
 	Rules(Database db) {
 		activeLoan = activeLoanRel.solving((l, c, m, d) ->
 				Schema.loan.exists(db, l, c, m, d)
@@ -46,5 +52,11 @@ final class Rules {
 		availableCopy = availableCopyRel.solving((c, i) ->
 				Schema.copy.exists(db, c, i)
 						.and(exclude(onLoan.posted(c))));
+		overdue = overdueRel.solving((l, t) -> defer(() -> {
+			Unifiable<Integer> c = lvar();
+			Unifiable<Integer> m = lvar();
+			Unifiable<Integer> d = lvar();
+			return activeLoan.exists(l, c, m, d).and(lss(d, t));
+		}));
 	}
 }
