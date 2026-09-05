@@ -11,17 +11,21 @@ import com.tgac.logic.unification.Unifiable;
 import com.tgac.pldb.inmemory.Database;
 import com.tgac.pldb.inmemory.ImmutableDatabase;
 import com.tgac.pldb.relations.Fact;
+import io.vavr.control.Try;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Library {
 
 	private final Database db;
+	private final Rules rules;
+
+	private Library(Database db) {
+		this.db = db;
+		this.rules = new Rules(db);
+	}
 
 	public static Library empty() {
 		return new Library(ImmutableDatabase.empty());
@@ -45,11 +49,52 @@ public final class Library {
 		return new Library(db.withFacts(Collections.singletonList(fact)).get());
 	}
 
+	// -- commands --------------------------------------------------------
+
+	public Try<Library> checkOut(int loanId, int copyId, int memberId, int dueDay) {
+		if (!isMember(memberId)) {
+			return Try.failure(new IllegalStateException("not a member: " + memberId));
+		}
+		if (!isAvailable(copyId)) {
+			return Try.failure(new IllegalStateException("copy not available: " + copyId));
+		}
+		return Try.success(with(Schema.loan.fact(loanId, copyId, memberId, dueDay)));
+	}
+
+	public Try<Library> returnCopy(int loanId) {
+		if (!hasActiveLoan(loanId)) {
+			return Try.failure(new IllegalStateException("no active loan: " + loanId));
+		}
+		return Try.success(with(Schema.returned.fact(loanId)));
+	}
+
+	private boolean isMember(int memberId) {
+		Unifiable<String> n = lvar();
+		return Schema.member.exists(db, lval(memberId), n).solve(n).findAny().isPresent();
+	}
+
+	private boolean isAvailable(int copyId) {
+		Unifiable<String> i = lvar();
+		return rules.availableCopy.exists(lval(copyId), i).solve(i).findAny().isPresent();
+	}
+
+	private boolean hasActiveLoan(int loanId) {
+		Unifiable<Integer> c = lvar();
+		Unifiable<Integer> m = lvar();
+		Unifiable<Integer> d = lvar();
+		return rules.activeLoan.exists(lval(loanId), c, m, d).solve(c).findAny().isPresent();
+	}
+
 	// -- the read side: relational queries -------------------------------
 
 	public List<Integer> copiesOf(String isbn) {
 		Unifiable<Integer> c = lvar();
 		return values(Schema.copy.exists(db, c, lval(isbn)).solve(c));
+	}
+
+	public List<Integer> availableCopies(String isbn) {
+		Unifiable<Integer> c = lvar();
+		return values(rules.availableCopy.exists(c, lval(isbn)).solve(c));
 	}
 
 	public List<String> titlesBy(String author) {
