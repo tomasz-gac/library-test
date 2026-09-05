@@ -46,7 +46,15 @@ public final class Schema {
 	public static final Property<Integer> resId = Property.<Integer>of("resId").indexed();
 	public static final Property<Integer> day = Property.<Integer>of("day");
 
-	/** A hold on a title. */
+	/** A hold on a title; stays forever, cancellation and fulfillment are separate events. */
 	public static final Relations._4<Integer, String, Integer, Integer> reservation =
 			Relations.relation("reservation", resId, isbn, memberId, day);
+
+	/** A cancellation event closing a reservation. */
+	public static final Relations._1<Integer> cancelled =
+			Relations.relation("cancelled", resId);
+
+	/** A fulfillment event closing a reservation — its member checked the title out. */
+	public static final Relations._1<Integer> fulfilled =
+			Relations.relation("fulfilled", resId);
 }

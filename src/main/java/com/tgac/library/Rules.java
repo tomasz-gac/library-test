@@ -30,6 +30,8 @@ final class Rules {
 			Relations.relation("registeredMember", Schema.memberId);
 	private static final Relations._1<Integer> knownCopyRel =
 			Relations.relation("knownCopy", Schema.copyId);
+	private static final Relations._4<Integer, String, Integer, Integer> liveReservationRel =
+			Relations.relation("liveReservation", Schema.resId, Schema.isbn, Schema.memberId, Schema.day);
 	private static final Relations._2<String, Integer> queueHeadRel =
 			Relations.relation("queueHead", Schema.isbn, Schema.memberId);
 	private static final Property<String> reason = Property.<String>of("reason");
@@ -58,10 +60,13 @@ final class Rules {
 	/** ∃-projection of copy onto the id. */
 	final Relations._1<Integer>.Derived knownCopy;
 
+	/** reservation without a cancellation or fulfillment event. */
+	final Relations._4<Integer, String, Integer, Integer>.Derived liveReservation;
+
 	/**
-	 * The member holding the title's oldest reservation — ids are issued in
-	 * order, so min id is FIFO. Mode-restricted: the aggregate inside needs
-	 * the isbn ground at the probe.
+	 * The member holding the title's oldest live reservation — ids are issued
+	 * in order, so min id is FIFO. Mode-restricted: the aggregate inside
+	 * needs the isbn ground at the probe.
 	 */
 	final Relations._2<String, Integer>.Derived queueHead;
 
@@ -100,16 +105,20 @@ final class Rules {
 			Unifiable<String> i = lvar();
 			return Schema.copy.exists(db, c, i);
 		}));
+		liveReservation = liveReservationRel.solving((r, i, m, d) ->
+				Schema.reservation.exists(db, r, i, m, d)
+						.and(exclude(Schema.cancelled.posted(db, r)))
+						.and(exclude(Schema.fulfilled.posted(db, r))));
 		queueHead = queueHeadRel.solving((i, h) -> defer(() -> {
 			Unifiable<Integer> minR = lvar();
 			return Aggregate.min(r -> defer(() -> {
 						Unifiable<Integer> m0 = lvar();
 						Unifiable<Integer> d0 = lvar();
-						return Schema.reservation.exists(db, r, i, m0, d0);
+						return liveReservation.exists(r, i, m0, d0);
 					}), minR)
 					.and(defer(() -> {
 						Unifiable<Integer> d = lvar();
-						return Schema.reservation.exists(db, minR, i, h, d);
+						return liveReservation.exists(minR, i, h, d);
 					}));
 		}));
 		denial = denialRel.solving((m, c, r) ->

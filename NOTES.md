@@ -85,6 +85,18 @@ source; queueHead's min is exactly this shape, the loan-limit count is not.
 (c) SHELVED — folds over derived sub-plans (the loan-limit count) need the
 goals-as-data fold-planner; stays shelved.
 
+## 7. Entry 4 dissolved: reservations became events
+
+The delete friction was self-inflicted — the model had two write disciplines:
+loans were events (append-only, the present derived by negation) while
+reservations were destructively updated. Making cancellation and fulfillment
+events (cancelled/fulfilled relations, liveReservation = reservation ∧
+¬cancelled ∧ ¬fulfilled) removed every delete from the domain: all four
+commands are now validate-then-append, Database.withoutFacts has no caller
+here, and the Postgres shape improves to INSERT-only event tables. The
+lesson generalizes: where a relational domain layer seems to need deletion,
+look for the event the deletion was impersonating.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked

@@ -7,9 +7,7 @@ import static com.tgac.logic.unification.LVal.lval;
 import static com.tgac.logic.unification.LVar.lvar;
 
 import com.tgac.logic.unification.Reified;
-import com.tgac.logic.unification.Term;
 import com.tgac.logic.unification.Unifiable;
-import io.vavr.Tuple;
 import com.tgac.pldb.inmemory.Database;
 import com.tgac.pldb.inmemory.ImmutableDatabase;
 import com.tgac.pldb.relations.Fact;
@@ -54,9 +52,6 @@ public final class Library {
 		return new Library(db.withFacts(Collections.singletonList(fact)).get());
 	}
 
-	private Library without(Fact fact) {
-		return new Library(db.withoutFacts(Collections.singletonList(fact)).get());
-	}
 
 	// -- commands --------------------------------------------------------
 
@@ -66,7 +61,7 @@ public final class Library {
 			return Try.failure(new IllegalStateException(String.join("; ", denials)));
 		}
 		return Try.success(with(Schema.loan.fact(loanId, copyId, memberId, dueDay))
-				.withoutReservationOf(memberId, isbnOf(copyId)));
+				.fulfillReservationOf(memberId, isbnOf(copyId)));
 	}
 
 	public Try<Library> reserve(int resId, String isbn, int memberId, int day) {
@@ -84,16 +79,10 @@ public final class Library {
 	}
 
 	public Try<Library> cancelReservation(int resId) {
-		Unifiable<String> i = lvar();
-		Unifiable<Integer> m = lvar();
-		Unifiable<Integer> d = lvar();
-		return Schema.reservation.exists(db, lval(resId), i, m, d)
-				.solve(lval(Tuple.of(i, m, d)))
-				.map(Term::get)
-				.findFirst()
-				.map(t -> Try.success(without(Schema.reservation.fact(
-						resId, t._1.get(), t._2.get(), t._3.get()))))
-				.orElseGet(() -> Try.failure(new IllegalStateException("no reservation: " + resId)));
+		if (!hasLiveReservation(resId)) {
+			return Try.failure(new IllegalStateException("no reservation: " + resId));
+		}
+		return Try.success(with(Schema.cancelled.fact(resId)));
 	}
 
 	public Try<Library> returnCopy(int loanId) {
@@ -121,19 +110,26 @@ public final class Library {
 				.orElseThrow(() -> new IllegalStateException("no such copy: " + copyId));
 	}
 
-	/** The member's reservation for the title, as the full removable fact. */
-	private Optional<Fact> reservationOf(int memberId, String isbn) {
+	/** The member's live reservation for the title, by id. */
+	private Optional<Integer> reservationOf(int memberId, String isbn) {
 		Unifiable<Integer> r = lvar();
 		Unifiable<Integer> d = lvar();
-		return Schema.reservation.exists(db, r, lval(isbn), lval(memberId), d)
-				.solve(lval(Tuple.of(r, d)))
-				.map(Term::get)
-				.findFirst()
-				.map(t -> Schema.reservation.fact(t._1.get(), isbn, memberId, t._2.get()));
+		return rules.liveReservation.exists(r, lval(isbn), lval(memberId), d)
+				.solve(r)
+				.findFirst().map(Reified::get);
 	}
 
-	private Library withoutReservationOf(int memberId, String isbn) {
-		return reservationOf(memberId, isbn).map(this::without).orElse(this);
+	private Library fulfillReservationOf(int memberId, String isbn) {
+		return reservationOf(memberId, isbn)
+				.map(r -> with(Schema.fulfilled.fact(r)))
+				.orElse(this);
+	}
+
+	private boolean hasLiveReservation(int resId) {
+		Unifiable<String> i = lvar();
+		Unifiable<Integer> m = lvar();
+		Unifiable<Integer> d = lvar();
+		return rules.liveReservation.exists(lval(resId), i, m, d).solve(i).findAny().isPresent();
 	}
 
 	private boolean hasActiveLoan(int loanId) {

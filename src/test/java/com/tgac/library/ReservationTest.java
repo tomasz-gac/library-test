@@ -56,6 +56,18 @@ public class ReservationTest {
 	}
 
 	@Test
+	public void aClosedReservationDoesNotBlockANewOne() {
+		Library cancelled = stocked()
+				.reserve(900, "978-0", 101, 3).get()
+				.cancelReservation(900).get();
+		assertThat(cancelled.reserve(901, "978-0", 101, 5).isSuccess()).isTrue();
+		Library fulfilled = stocked()
+				.reserve(900, "978-0", 101, 3).get()
+				.checkOut(500, 1, 101, 30).get();
+		assertThat(fulfilled.reserve(901, "978-0", 101, 5).isSuccess()).isTrue();
+	}
+
+	@Test
 	public void cancellingAdvancesTheQueue() {
 		Library lib = stocked()
 				.reserve(900, "978-0", 101, 3).get()
