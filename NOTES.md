@@ -50,6 +50,23 @@ query-then-remove round trip. Reasonable for a value store, but the domain
 layer grows a "read the whole row to forget it" idiom. A withoutMatching
 (relation + bound pattern) door on Database would collapse it.
 
+## 5. Entry 3's answer: invert the face — policy as its own complement
+
+Tom's move: don't ask "may check out" (a conjunction with no witness when it
+fails); define denial(m, c, reason) — one disjunct per violated rule, each
+unifying reason with its name. De Morgan at the modelling level: the negated
+conjunction becomes a disjunction of positive, nameable violations. Permission
+= no denials, so there is no positive twin to drift from; violations enumerate
+instead of first-failing; the command is one solve plus a fact append. Costs:
+(a) MODE RESTRICTION — the loan-limit disjunct counts, and the count's inputs
+must be ground, so denial only answers ground (m, c) probes; the first
+relation here that isn't fully relational in its arguments. (b) Reasons name
+the failed guard, they don't explain it — structural reasons (heldBy(m'))
+are the upgrade if wanted. Exercises: negation three deep
+(¬availableCopy → ¬onLoan → ¬returned), aggregate + FD geq inside a tabled
+disjunct, a derived (queueHead, itself argmin-shaped) consumed under
+disequality. All worked without engine friction.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked

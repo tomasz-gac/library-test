@@ -3,11 +3,9 @@ package com.tgac.library;
 // ABOUTME: The library domain facade — an immutable fact base with commands
 // ABOUTME: that append events and queries answered relationally by the engine.
 
-import static com.tgac.logic.goals.Goal.defer;
 import static com.tgac.logic.unification.LVal.lval;
 import static com.tgac.logic.unification.LVar.lvar;
 
-import com.tgac.logic.aggregate.Aggregate;
 import com.tgac.logic.unification.Reified;
 import com.tgac.logic.unification.Term;
 import com.tgac.logic.unification.Unifiable;
@@ -63,22 +61,12 @@ public final class Library {
 	// -- commands --------------------------------------------------------
 
 	public Try<Library> checkOut(int loanId, int copyId, int memberId, int dueDay) {
-		if (!isMember(memberId)) {
-			return Try.failure(new IllegalStateException("not a member: " + memberId));
+		List<String> denials = checkOutDenials(memberId, copyId);
+		if (!denials.isEmpty()) {
+			return Try.failure(new IllegalStateException(String.join("; ", denials)));
 		}
-		if (!isAvailable(copyId)) {
-			return Try.failure(new IllegalStateException("copy not available: " + copyId));
-		}
-		if (activeLoanCount(memberId) >= LOAN_LIMIT) {
-			return Try.failure(new IllegalStateException("member at loan limit: " + memberId));
-		}
-		String isbn = isbnOf(copyId);
-		Optional<Integer> head = nextInQueue(isbn);
-		if (head.filter(h -> h != memberId).isPresent()) {
-			return Try.failure(new IllegalStateException("title held for member " + head.get()));
-		}
-		Library lent = with(Schema.loan.fact(loanId, copyId, memberId, dueDay));
-		return Try.success(head.isPresent() ? lent.withoutReservationOf(memberId, isbn) : lent);
+		return Try.success(with(Schema.loan.fact(loanId, copyId, memberId, dueDay))
+				.withoutReservationOf(memberId, isbnOf(copyId)));
 	}
 
 	public Try<Library> reserve(int resId, String isbn, int memberId, int day) {
@@ -118,20 +106,6 @@ public final class Library {
 	private boolean isMember(int memberId) {
 		Unifiable<String> n = lvar();
 		return Schema.member.exists(db, lval(memberId), n).solve(n).findAny().isPresent();
-	}
-
-	private boolean isAvailable(int copyId) {
-		Unifiable<String> i = lvar();
-		return rules.availableCopy.exists(lval(copyId), i).solve(i).findAny().isPresent();
-	}
-
-	private int activeLoanCount(int memberId) {
-		Unifiable<Integer> n = lvar();
-		return Aggregate.<Integer>count(l -> defer(() -> {
-			Unifiable<Integer> c = lvar();
-			Unifiable<Integer> d = lvar();
-			return rules.activeLoan.exists(l, c, lval(memberId), d);
-		}), n).solve(n).findFirst().map(Reified::get).orElse(0);
 	}
 
 	private boolean hasBook(String isbn) {
@@ -186,25 +160,15 @@ public final class Library {
 		return values(rules.overdue.exists(l, lval(today)).solve(l));
 	}
 
-	/**
-	 * The queue head for a title: the member holding the reservation with the
-	 * smallest id — reservation ids are issued in order, so min id is FIFO.
-	 * The argmin is one goal: min binds the id, the join reads the member.
-	 */
 	public Optional<Integer> nextInQueue(String isbn) {
-		Unifiable<Integer> minR = lvar();
-		Unifiable<Integer> m = lvar();
-		return Aggregate.min(r -> defer(() -> {
-					Unifiable<Integer> m0 = lvar();
-					Unifiable<Integer> d0 = lvar();
-					return Schema.reservation.exists(db, r, lval(isbn), m0, d0);
-				}), minR)
-				.and(defer(() -> {
-					Unifiable<Integer> d = lvar();
-					return Schema.reservation.exists(db, minR, lval(isbn), m, d);
-				}))
-				.solve(m)
-				.findFirst().map(Reified::get);
+		Unifiable<Integer> h = lvar();
+		return rules.queueHead.exists(lval(isbn), h).solve(h).findFirst().map(Reified::get);
+	}
+
+	/** Every rule the checkout would violate, by name; empty means allowed. */
+	public List<String> checkOutDenials(int memberId, int copyId) {
+		Unifiable<String> r = lvar();
+		return values(rules.denial.exists(lval(memberId), lval(copyId), r).solve(r));
 	}
 
 	public List<String> titlesBy(String author) {
