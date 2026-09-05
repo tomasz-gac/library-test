@@ -67,6 +67,24 @@ are the upgrade if wanted. Exercises: negation three deep
 disjunct, a derived (queueHead, itself argmin-shaped) consumed under
 disequality. All worked without engine friction.
 
+## 6. Aggregation does not push down (Tom's observation, Sep 2026)
+
+Migrating this domain to Postgres, every Aggregate is fetch-all-then-fold:
+the sub-goal is an opaque closure, and pushdown needs syntax (the
+Theory-as-syntax lesson — the SQL compiler walks atoms, not goals). The
+loan-limit count would stream the member's loans over the wire to count
+them; the DB wanted one COUNT(*) round trip. Three tiers of answer:
+(a) NOW, no engine change — aggregation-bearing rules migrate as SQL views
+exposed as base relations; fold placement becomes a per-relation sourcing
+decision, priced by view/rule drift. (b) DESIGNABLE, small — a fold
+capability on the source seam, generalizing estimate(Call) (which is
+already COUNT pushed down, priced): fold(Call, FoldSpec) with FoldSpec a
+closed vocabulary (count/sum/min/max over a column), consulted by Aggregate
+only when the sub-goal normalizes to a single Call on a fold-capable
+source; queueHead's min is exactly this shape, the loan-limit count is not.
+(c) SHELVED — folds over derived sub-plans (the loan-limit count) need the
+goals-as-data fold-planner; stays shelved.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
