@@ -41,6 +41,22 @@ the command layer owning the reasons. Related door: conditional answers
 already carry "holds IF" — a maybeCheckOut relation with residues would say
 "yes if you return something first". Not built; noted.
 
+## 4. Deleting a fact means reading it back whole first
+
+Wanted: cancelReservation(resId) — remove by key. Had to: solve for the full
+tuple (isbn, member, day), rebuild the complete Fact, then withoutFacts — the
+Database removes facts by value, not by key, so every targeted delete is a
+query-then-remove round trip. Reasonable for a value store, but the domain
+layer grows a "read the whole row to forget it" idiom. A withoutMatching
+(relation + bound pattern) door on Database would collapse it.
+
+## Positive receipt: argmin is one goal, not a gap
+
+The reservation-queue head (member holding the minimum reservation id) looked
+like it would need two solves; it's one goal — Aggregate.min binds the id and
+an ordinary join reads the member off it. No friction, recording the pattern
+so it isn't re-derived.
+
 ## Positive receipt: count over a tabled derived relation
 
 Aggregate.count over activeLoan (a Derived, hence tabled production behind a
