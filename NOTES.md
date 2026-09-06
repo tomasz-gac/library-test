@@ -111,6 +111,23 @@ omission under exclude() is precisely the free-var quantifier bug — the
 negated seat must refuse omission (projecting() through a real Derived is
 the sanctioned spelling). Names awaiting ratification: is / projecting.
 
+## 9. SQL joins: the gap is seam vocabulary, not literal ergonomics
+
+Worry (Tom): auto-exists literals might foreclose SQL join pushdown. They
+don't — goal combinators are immutable values (#103), a positive literal is
+a LookupGoal (relation, source, args), so a same-source conjunction with
+shared variables is inspectable, join-recognizable syntax; negated postings
+render as NOT EXISTS (liveReservation's body = one SELECT, two anti-joins).
+The REAL blockers: (a) Call is single-relation — the seam needs a
+conjunctive-query question shape plus a source capability, the same
+extension family as entry 6's FoldSpec; (b) table boundaries — joins across
+Deriveds stay engine-side by construction (materialization), but the
+practical joins live INSIDE bodies where a fusion pass reaches them. Risk
+profile: fusion is purely additive; the per-literal fallback is always
+correct, so the planner can refuse when unsure. Side finding: defer()
+thunks are the actual syntax-destroyers — block-bodied lambdas scope locals
+without hiding literals from a future planner.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
