@@ -265,6 +265,29 @@ time, not construction time. The doc's old open decision stands: keep or
 delete the db-threading overloads. One design brief now: entries 14-16 +
 database-ergonomics §1.
 
+## 17. Generators vs filters: the ⊕/⊗ split asking to be a capability
+
+Tom's proposal: separate constraints-as-filters from domains-that-generate
+(compressed branches). Assessment: real, valuable, and already half-built
+— it is the engine's one algebra surfacing at the store level. A domain is
+a compressed ⊕ (deferred branches; labelling = decompression); a filter is
+a ⊗ factor (kills or discharges, holds no branches; nogoods are the pure
+case); the conditional answer ⊕(t=r ⊗ C) is rows-as-generator,
+conditions-as-filter. Operational fossils of the unnamed split:
+verifier-last = filters-last; groundNarrowestFirst = the shared generator
+sweep; estimate ranks only generators, doomed is the guard's kill;
+"Variables without domain detected" = the sweep finding no generative
+coverage; the deferred-generator divergence = a ⊗-object faking ⊕ by
+antichain. NOT a store split — the verdict ladder is a role-switcher
+(posted records filter while narrowing, generate at enumerate/collapse),
+FD is both. Two named FACES on the capability record instead: generative
+(meet, collapse, enumerate, estimate — owes labelling coverage, priceable)
+and guard (judge, narrow others, never enumerate). Buys: principled
+enforce sweep, typed optimizer oracles, seat-discipline refusals that cite
+the missing capability, Range-over-dense declared guard-only by type.
+Logic-side capability design pass (STOP-listed); glossary terms to ratify;
+adjacent to task #120.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
