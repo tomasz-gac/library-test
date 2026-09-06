@@ -331,6 +331,19 @@ when one of those revives. The residence arc decouples cleanly: the
 table registry keys by Derived identity, sources stay captured; entry 14
 stands without entry 16.
 
+## Receipt: entries 8 and the arity wall, closed by the Literal surface
+
+The function-shaped relation landed (Sep 2026): Postable in logic (exclude
+converts any literal at the door), LookupGoal renamed Literal + the
+builder (Literal.of(name, db).indexed/arg/ground(name, u), .fact()
+terminal, refusal by column name), Schema rebuilt as one method per
+relation — names stated once, parameter names in every IDE hint, no
+relation constants, no .posted() ceremony on base literals, arity
+unbounded (12-column receipt; the vavr tuple cap survives only in the
+Derived faces, dying with the derived-face redesign). Entry 8's is()/
+projecting names were superseded by this shape; partial mention and
+projecting remain open doors with their recorded triggers.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
