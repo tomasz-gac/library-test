@@ -187,6 +187,21 @@ shared-table scenario becomes reachable exactly when cross-request reuse
 hardening candidate (STOP-listed, needs the go): refuse loudly when a
 reader from a different drive joins an open entry.
 
+## 13. Pins don't simplify the PG port — but event sourcing made them cheap
+
+Tom's question: would pins simplify the Postgres integration? No: the
+transaction-scoped port (entry 11) is simple BECAUSE nothing outlives its
+snapshot — pins defend claims that outlive theirs, so they only add code
+there. Their cheapest tier (record source tokens per solve, refuse loudly
+on conflict, no reuse policies) buys hardening — turning one-snapshot-per-
+Library from convention into checked invariant — not simplicity. The
+finding worth keeping: entry 7's INSERT-only schema gives every relation a
+natural pin, its high-water mark (one indexed SELECT max() to check). But
+reuse must be iff-EQUAL, not monotone: derived relations negate, so an
+append can kill view rows — the log grows monotonically, the views don't.
+Exactly why Pin separates per-class reuse policy from leq. When the
+cross-request-reuse trigger fires, this domain is the easy case.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
