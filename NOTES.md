@@ -148,6 +148,25 @@ default; estimate keeps doomed cheap either way. Anti-join fusion (NOT
 EXISTS) deferred: negated literals live in the nogood store, cross-family.
 Candidate for graduation to a logic/docs/notes one-idea note.
 
+## 11. Mint-new-per-write is snapshot isolation in disguise
+
+Tom's question: Library mints a new Library+Rules per write — would that
+work against Postgres? Yes, but only because the pattern silently assumes
+what ImmutableDatabase provides: a source that is a VALUE. Fresh Rules per
+write = every memoizing layer (owned tables, coverage ledger) lives exactly
+as long as the state it memoizes — cache invalidation by reconstruction,
+sound by construction. Against a connection (shared mutable world) the
+naive port breaks twice: shared caches outliving a write hold coverage
+proofs about the old state (§5.1 stability, the unchecked isolation()
+witness), and autocommit + concurrent writers tear reads WITHIN one solve
+(liveReservation's two probes straddling a foreign commit — a failure the
+in-memory version cannot even express). The port: Library value ↔ one
+REPEATABLE READ transaction; MVCC snapshot plays ImmutableDatabase;
+commands are denials-then-INSERT in the same transaction; commit is the
+write face; next Library = next transaction. Per-value caches stay sound
+and useful (ORM first-level-cache cost profile). Cross-transaction reuse =
+the pins design (txid as the Pin), deferred on its triggers.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
