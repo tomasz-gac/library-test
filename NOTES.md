@@ -167,6 +167,26 @@ write face; next Library = next transaction. Per-value caches stay sound
 and useful (ORM first-level-cache cost profile). Cross-transaction reuse =
 the pins design (txid as the Pin), deferred on its triggers.
 
+## 12. Tables assume one solve; the produce CAS is not a concurrency story
+
+Tom's observation: table() extraction + REST means two solves in two
+threads can run on one table — never openly considered. The partition:
+SEALED entries are immutable values, cross-solve replay is sound (the
+warm-start story). OPEN entries embed three single-solve assumptions the
+plant-once CAS does not cover: (a) cross-scheduler wakes — a foreign
+reader's parked frame must become runnable on ITS scheduler (#64's ready
+door, still pending, is the missing primitive); (b) the abandoned master —
+pull-based solve streams can walk away holding the claim, leaving a
+poisoned key (claimed, unsealed, undeliverable) with no lease/abandonment
+story; (c) completion accounting — group seal and region billing are
+ambient per-solve, foreign readers corrupt the arithmetic. The library is
+immune TODAY because entry 11's mint-new pattern gives fresh tables per
+request — concurrency isolation as the third job of reconstruction. The
+shared-table scenario becomes reachable exactly when cross-request reuse
+(pins/warm start) is built: one deferred decision, not two. Near-term
+hardening candidate (STOP-listed, needs the go): refuse loudly when a
+reader from a different drive joins an open entry.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
