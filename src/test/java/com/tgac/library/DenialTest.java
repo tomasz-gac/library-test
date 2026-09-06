@@ -60,6 +60,25 @@ public class DenialTest {
 	}
 
 	@Test
+	public void aCleanReserveHasNoDenials() {
+		assertThat(stocked().reserveDenials(100, "978-0")).isEmpty();
+	}
+
+	@Test
+	public void reserveViolationsAreNamed() {
+		assertThat(stocked().reserveDenials(999, "978-9")).containsExactlyInAnyOrder(
+				"not a member",
+				"no such title");
+	}
+
+	@Test
+	public void aDuplicateReservationIsDeniedByName() {
+		Library lib = stocked().reserve(900, "978-0", 101, 3).get();
+		assertThat(lib.reserveDenials(101, "978-0")).containsExactlyInAnyOrder(
+				"already holds a reservation");
+	}
+
+	@Test
 	public void theFailureCarriesEveryReason() {
 		Library lib = stocked()
 				.checkOut(500, 1, 100, 30).get()

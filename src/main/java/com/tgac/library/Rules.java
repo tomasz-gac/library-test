@@ -34,9 +34,13 @@ final class Rules {
 			Relations.relation("liveReservation", Schema.resId, Schema.isbn, Schema.memberId, Schema.day);
 	private static final Relations._2<String, Integer> queueHeadRel =
 			Relations.relation("queueHead", Schema.isbn, Schema.memberId);
+	private static final Relations._1<String> knownTitleRel =
+			Relations.relation("knownTitle", Schema.isbn);
 	private static final Property<String> reason = Property.<String>of("reason");
-	private static final Relations._3<Integer, Integer, String> denialRel =
-			Relations.relation("denial", Schema.memberId, Schema.copyId, reason);
+	private static final Relations._3<Integer, Integer, String> checkOutDenialRel =
+			Relations.relation("checkOutDenial", Schema.memberId, Schema.copyId, reason);
+	private static final Relations._3<Integer, String, String> reserveDenialRel =
+			Relations.relation("reserveDenial", Schema.memberId, Schema.isbn, reason);
 
 	/** loan without a return event. */
 	final Relations._4<Integer, Integer, Integer, Integer>.Derived activeLoan;
@@ -60,6 +64,9 @@ final class Rules {
 	/** ∃-projection of copy onto the id. */
 	final Relations._1<Integer>.Derived knownCopy;
 
+	/** ∃-projection of book onto the isbn. */
+	final Relations._1<String>.Derived knownTitle;
+
 	/** reservation without a cancellation or fulfillment event. */
 	final Relations._4<Integer, String, Integer, Integer>.Derived liveReservation;
 
@@ -76,7 +83,10 @@ final class Rules {
 	 * the ABSENCE of denials — there is no positive twin to drift from.
 	 * Mode-restricted: the loan-limit count needs member and copy ground.
 	 */
-	final Relations._3<Integer, Integer, String>.Derived denial;
+	final Relations._3<Integer, Integer, String>.Derived checkOutDenial;
+
+	/** The reserve policy's complement, same shape as checkOutDenial. */
+	final Relations._3<Integer, String, String>.Derived reserveDenial;
 
 	Rules(Database db) {
 		activeLoan = activeLoanRel.solving((l, c, m, d) ->
@@ -105,6 +115,11 @@ final class Rules {
 			Unifiable<String> i = lvar();
 			return Schema.copy.exists(db, c, i);
 		}));
+		knownTitle = knownTitleRel.solving(i -> defer(() -> {
+			Unifiable<String> t = lvar();
+			Unifiable<String> a = lvar();
+			return Schema.book.exists(db, i, t, a);
+		}));
 		liveReservation = liveReservationRel.solving((r, i, m, d) ->
 				Schema.reservation.exists(db, r, i, m, d)
 						.and(exclude(Schema.cancelled.posted(db, r)))
@@ -121,7 +136,7 @@ final class Rules {
 						return liveReservation.exists(minR, i, h, d);
 					}));
 		}));
-		denial = denialRel.solving((m, c, r) ->
+		checkOutDenial = checkOutDenialRel.solving((m, c, r) ->
 				exclude(registeredMember.posted(m))
 						.and(r.unifies("not a member"))
 						.or(exclude(knownCopy.posted(c))
@@ -149,6 +164,17 @@ final class Rules {
 									.and(queueHead.exists(i, h))
 									.and(exclude(h.unifies(m)))
 									.and(r.unifies("title held for another member"));
+						})));
+		reserveDenial = reserveDenialRel.solving((m, i, r) ->
+				exclude(registeredMember.posted(m))
+						.and(r.unifies("not a member"))
+						.or(exclude(knownTitle.posted(i))
+								.and(r.unifies("no such title")))
+						.or(defer(() -> {
+							Unifiable<Integer> res = lvar();
+							Unifiable<Integer> d = lvar();
+							return liveReservation.exists(res, i, m, d)
+									.and(r.unifies("already holds a reservation"));
 						})));
 	}
 }

@@ -65,15 +65,9 @@ public final class Library {
 	}
 
 	public Try<Library> reserve(int resId, String isbn, int memberId, int day) {
-		if (!isMember(memberId)) {
-			return Try.failure(new IllegalStateException("not a member: " + memberId));
-		}
-		if (!hasBook(isbn)) {
-			return Try.failure(new IllegalStateException("no such title: " + isbn));
-		}
-		if (reservationOf(memberId, isbn).isPresent()) {
-			return Try.failure(new IllegalStateException(
-					"member " + memberId + " already holds a reservation for " + isbn));
+		List<String> denials = reserveDenials(memberId, isbn);
+		if (!denials.isEmpty()) {
+			return Try.failure(new IllegalStateException(String.join("; ", denials)));
 		}
 		return Try.success(with(Schema.reservation.fact(resId, isbn, memberId, day)));
 	}
@@ -90,17 +84,6 @@ public final class Library {
 			return Try.failure(new IllegalStateException("no active loan: " + loanId));
 		}
 		return Try.success(with(Schema.returned.fact(loanId)));
-	}
-
-	private boolean isMember(int memberId) {
-		Unifiable<String> n = lvar();
-		return Schema.member.exists(db, lval(memberId), n).solve(n).findAny().isPresent();
-	}
-
-	private boolean hasBook(String isbn) {
-		Unifiable<String> t = lvar();
-		Unifiable<String> a = lvar();
-		return Schema.book.exists(db, lval(isbn), t, a).solve(t).findAny().isPresent();
 	}
 
 	private String isbnOf(int copyId) {
@@ -164,7 +147,13 @@ public final class Library {
 	/** Every rule the checkout would violate, by name; empty means allowed. */
 	public List<String> checkOutDenials(int memberId, int copyId) {
 		Unifiable<String> r = lvar();
-		return values(rules.denial.exists(lval(memberId), lval(copyId), r).solve(r));
+		return values(rules.checkOutDenial.exists(lval(memberId), lval(copyId), r).solve(r));
+	}
+
+	/** Every rule the reservation would violate, by name; empty means allowed. */
+	public List<String> reserveDenials(int memberId, String isbn) {
+		Unifiable<String> r = lvar();
+		return values(rules.reserveDenial.exists(lval(memberId), lval(isbn), r).solve(r));
 	}
 
 	public List<String> titlesBy(String author) {
