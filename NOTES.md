@@ -288,6 +288,28 @@ the missing capability, Range-over-dense declared guard-only by type.
 Logic-side capability design pass (STOP-listed); glossary terms to ratify;
 adjacent to task #120.
 
+## 18. Any breaks the two-class split: symbolic generators and dynamic safety
+
+Tom's counter to entry 17: an Any under an order residue is "infinite
+enumeration symbolically" — neither a filter (it is a row, positive
+knowledge) nor an enumerable generator (its ⊕ is infinite). His Datalog
+suspicion is exactly RANGE RESTRICTION: safe Datalog statically refuses
+variables appearing in no finite positive atom. The fix: three classes —
+enumerable generators (finite ⊕: label/count/price), SYMBOLIC generators
+(infinite ⊕, finitely represented: Any+residues, dense ranges — consume,
+narrow, negate, deliver; refused where extension is needed), filters (⊗).
+The engine already enforces safety at Datalog's boundary but DYNAMICALLY,
+per door: Aggregate.requireGround ("denotes infinitely many distinct
+tuples" — the safety condition verbatim), variables-without-domain at
+labelling, the MAX_VALUE pricing barrier. Static safety refuses whole
+rules; dynamic safety admits programs and refuses executions that reach an
+under-equipped door — more expressive, failures move to solve time, hence
+loud named refusals. Finiteness relocates rather than drops: Datalog-safe
+= finitely many ground tuples; engine-safe = finitely many symbolic rows —
+our unsafe is the infinite ANTICHAIN, and the condition-depth watchdog is
+its safety check. Entry 17's design amends: the generative face splits
+enumerable/symbolic; each refusing door declares its demand.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
