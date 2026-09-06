@@ -202,6 +202,28 @@ append can kill view rows — the log grows monotonically, the views don't.
 Exactly why Pin separates per-class reuse policy from leq. When the
 cross-request-reuse trigger fires, this domain is the easy case.
 
+## 14. Solve-scoped tables: return to package residence (Tom's proposal)
+
+Instead of pins: make Derived tables solve-scoped. This is not a workaround
+— it returns to the engine's own doctrine (the compression's residence is a
+PACKAGE); TabledSource owning its table was the deviation, motivated by
+warm-start, which was then shelved — capability without a consumer,
+carrying entries 11/12 as liabilities. Mechanism: NOT clear-on-complete
+(close contract is hazy; clearing a shared Derived under a concurrent
+solve re-imports the race) but fresh-per-solve — a table registry planted
+at the solve root package, Deriveds resolve their table from the consuming
+package (keyed by Derived identity; within-solve memoization untouched;
+produce still re-bases for substitutions, carrying the registry). What
+dissolves: entry 12 wholesale, the mint-new pattern's concurrency job
+(static shared Rules becomes safe), pins shrink to source caches (caller's
+transaction problem). Cost: inter-solve replay (shipped + receipted) is
+torn down; warm start returns as an EXPLICIT seeding door — the caller
+threads a table forward when it knows the world stood still ("engine
+computes, caller persists" applied to caches). Design pass questions:
+registry planted at solve root (sibling branches must not mint
+duplicates); what table() becomes; seeded-solve receipts replacing the
+replay receipts. STOP-listed arc; awaits the go.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
