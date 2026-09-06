@@ -97,6 +97,20 @@ here, and the Postgres shape improves to INSERT-only event tables. The
 lesson generalizes: where a relational domain layer seems to need deletion,
 look for the event the deletion was impersonating.
 
+## 8. Positional arguments hide the schema's names (Tom, Sep 2026)
+
+Every exists/posted call is positional Unifiables; the argument names live in
+Property objects the call site can't see, so reading or writing a lookup
+means re-opening the relation definition. Java can't fix this positionally
+(relations are runtime values — parameter names are v0/v1 forever). The
+design that fits: binding objects on Property — copy.exists(db, copyId.is(c),
+isbn.is("978-0")) — order-free, per-binding typed, arity checked at runtime.
+Convergence: an OMITTED property = fresh local = ∃-projection in a positive
+seat, so named args and entry 1's projection door are one feature. The trap:
+omission under exclude() is precisely the free-var quantifier bug — the
+negated seat must refuse omission (projecting() through a real Derived is
+the sanctioned spelling). Names awaiting ratification: is / projecting.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
