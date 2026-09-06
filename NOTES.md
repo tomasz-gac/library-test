@@ -128,6 +128,26 @@ correct, so the planner can refuse when unsure. Side finding: defer()
 thunks are the actual syntax-destroyers — block-bodied lambdas scope locals
 without hiding literals from a future planner.
 
+## 10. Join execution: fusion is a store-family pass, not a goal rewrite
+
+Tom's worry: postings probe eagerly on wake; join pushdown needs delayed
+fetches + shared-variable recognition, which looks like optimizer surgery
+(push lookups to conjunction end, insert a re-evaluating wakeup goal). The
+reframe: the store already holds the joint-query node — the family's records
+ARE delayed fetches in registration form, wakes already re-walk args, and
+"the end of the conjunction" is enforcement. Join variables are
+substitution-dependent, so grouping must happen at fetch time on walked
+terms — which the family-level view does by construction; static analysis
+under-detects (aliasing grows monotonically). Ladder: tier 1 = lazy
+postings (imposition registers, fetch on trigger: threshold/labelling/
+policy — store-local); tier 2 = family-fused fetch (group parked records by
+source + walked alias classes → conjunctive Call → one JOIN). Optimizer's
+role shrinks to ordering + fetch-policy pricing. Tradeoff: eager probes buy
+propagation (supports, doomed) — laziness is a priced profile, not a
+default; estimate keeps doomed cheap either way. Anti-join fusion (NOT
+EXISTS) deferred: negated literals live in the nogood store, cross-family.
+Candidate for graduation to a logic/docs/notes one-idea note.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
