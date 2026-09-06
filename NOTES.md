@@ -310,6 +310,27 @@ our unsafe is the infinite ANTICHAIN, and the condition-depth watchdog is
 its safety check. Entry 17's design amends: the generative face splits
 enumerable/symbolic; each refusing door declares its demand.
 
+## 19. The solve-side registry withdrawn: partial application beats it
+
+Tom asked for the sell and the sell failed — entry 16 oversold. The
+registry's benefits fall to simpler moves: world-free rules and the
+oracle swap = ordinary partial application (bound handles: bind sources
+once per world at the top of Rules, bodies free of db — Rules(db) IS a
+rule library as a function of its sources); transaction-scoped caching =
+per-world value lifetime, already enforced more strongly than a registry
+discipline could (a world-coupled value cannot outlive its world; a
+registry can be re-seeded stale). Post-residence-arc the case weakens
+further: stateless Deriveds make Rules construction a few lambda
+allocations, so static sharing buys nothing. The DebugStore precedent
+does not transfer — a tracer is cross-cutting instrumentation, a source
+is per-literal semantics; ambient semantics is spooky action. What
+survives, shelved with a named trigger: late binding is irreplaceable
+ONLY for goals that outlive or leave their process (marshal,
+distribution, the deflated endpoint generator) — revive the registry
+when one of those revives. The residence arc decouples cleanly: the
+table registry keys by Derived identity, sources stay captured; entry 14
+stands without entry 16.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
