@@ -244,6 +244,27 @@ solve-root registry like tables, seeding threads both memo kinds, exists()
 loses its db argument to late binding. Lean: (1), with (2) triggered only
 by the REST endpoint-generator use case reviving.
 
+## 16. Relation→source binding at the solve: database-ergonomics §1, upgraded
+
+Tom recalled pldb's database-ergonomics.md — §1 already designed this
+(agreed, unbuilt): sources ride the Package as a plain Store (Table/
+DebugStore precedent), sourceless exists/posted overloads resolve at
+application time, refuse loudly by relation name, solveWith seeds. No core
+API change — the package IS the registration mechanism. Upgrades since the
+doc was written: (a) the mapping is per-relation → AnswerSource (doc
+predates the seam; one solve can mix memory and PG); (b) it resolves entry
+15's fork at option 2 cheaply — bodies mention relations only, Rules
+becomes a static value, the world enters at the solve boundary; (c) the
+binding value is the transaction's CachingAnswerSource — cross-solve
+pooling becomes explicit seeding, entry 15's scope conclusion as API;
+(d) it merges with entry 14 — the solve-root registry carries both memo
+kinds (tables) and their worlds (source bindings); produce-rebasing
+carries one registry, designed once. Conceptually: Datalog's program/
+database split — the interpretation of relation symbols supplied at query
+time, not construction time. The doc's old open decision stands: keep or
+delete the db-threading overloads. One design brief now: entries 14-16 +
+database-ergonomics §1.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
