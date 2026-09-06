@@ -92,34 +92,17 @@ final class Rules {
 		activeLoan = activeLoanRel.solving((l, c, m, d) ->
 				Schema.loan.exists(db, l, c, m, d)
 						.and(exclude(Schema.returned.posted(db, l))));
-		onLoan = onLoanRel.solving(c -> defer(() -> {
-			Unifiable<Integer> l = lvar();
-			Unifiable<Integer> m = lvar();
-			Unifiable<Integer> d = lvar();
-			return activeLoan.exists(l, c, m, d);
-		}));
+		onLoan = onLoanRel.solving(c -> activeLoan.exists(lvar(), c, lvar(), lvar()));
 		availableCopy = availableCopyRel.solving((c, i) ->
 				Schema.copy.exists(db, c, i)
 						.and(exclude(onLoan.posted(c))));
-		overdue = overdueRel.solving((l, t) -> defer(() -> {
-			Unifiable<Integer> c = lvar();
-			Unifiable<Integer> m = lvar();
+		overdue = overdueRel.solving((l, t) -> {
 			Unifiable<Integer> d = lvar();
-			return activeLoan.exists(l, c, m, d).and(lss(d, t));
-		}));
-		registeredMember = registeredMemberRel.solving(m -> defer(() -> {
-			Unifiable<String> n = lvar();
-			return Schema.member.exists(db, m, n);
-		}));
-		knownCopy = knownCopyRel.solving(c -> defer(() -> {
-			Unifiable<String> i = lvar();
-			return Schema.copy.exists(db, c, i);
-		}));
-		knownTitle = knownTitleRel.solving(i -> defer(() -> {
-			Unifiable<String> t = lvar();
-			Unifiable<String> a = lvar();
-			return Schema.book.exists(db, i, t, a);
-		}));
+			return activeLoan.exists(l, lvar(), lvar(), d).and(lss(d, t));
+		});
+		registeredMember = registeredMemberRel.solving(m -> Schema.member.exists(db, m, lvar()));
+		knownCopy = knownCopyRel.solving(c -> Schema.copy.exists(db, c, lvar()));
+		knownTitle = knownTitleRel.solving(i -> Schema.book.exists(db, i, lvar(), lvar()));
 		liveReservation = liveReservationRel.solving((r, i, m, d) ->
 				Schema.reservation.exists(db, r, i, m, d)
 						.and(exclude(Schema.cancelled.posted(db, r)))
@@ -149,11 +132,7 @@ final class Rules {
 						}))
 						.or(defer(() -> {
 							Unifiable<Integer> n = lvar();
-							return Aggregate.<Integer>count(l -> defer(() -> {
-										Unifiable<Integer> c0 = lvar();
-										Unifiable<Integer> d0 = lvar();
-										return activeLoan.exists(l, c0, m, d0);
-									}), n)
+							return Aggregate.<Integer>count(l -> activeLoan.exists(l, lvar(), m, lvar()), n)
 									.and(geq(n, lval(Library.LOAN_LIMIT)))
 									.and(r.unifies("at loan limit"));
 						}))
@@ -170,11 +149,7 @@ final class Rules {
 						.and(r.unifies("not a member"))
 						.or(exclude(knownTitle.posted(i))
 								.and(r.unifies("no such title")))
-						.or(defer(() -> {
-							Unifiable<Integer> res = lvar();
-							Unifiable<Integer> d = lvar();
-							return liveReservation.exists(res, i, m, d)
-									.and(r.unifies("already holds a reservation"));
-						})));
+						.or(liveReservation.exists(lvar(), i, m, lvar())
+								.and(r.unifies("already holds a reservation"))));
 	}
 }
