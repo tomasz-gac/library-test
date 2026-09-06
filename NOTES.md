@@ -224,6 +224,26 @@ registry planted at solve root (sibling branches must not mint
 duplicates); what table() becomes; seeded-solve receipts replacing the
 replay receipts. STOP-listed arc; awaits the go.
 
+## 15. Source caches are snapshot-scoped, and entry 14 over-claimed
+
+Tom extended entry 14 to CachingAnswerSource: shouldn't it be per-solve
+too? The taxonomy that answers it: a memo's lifetime must equal the
+lifetime of the world it memoizes. Tables memoize the derivation universe
+— per-solve, package residence. Source pools memoize the SOURCE SNAPSHOT —
+per-transaction; per-solve would be sound but needlessly narrow (the
+pool's payoff is cross-solve reuse within one request, sound under one
+REPEATABLE READ snapshot). The library's pattern already scopes it right;
+missing is enforcement (isolation() witness unchecked; the wrapper is
+single-threaded by assumption). The correction to entry 14: solve-scoped
+tables do NOT make static Rules safe — Derived bodies CAPTURE the source,
+and a static Rules freezes one db (and its cache) past its snapshot; the
+source capture is the residual world-coupling. Design fork for the
+residence arc: (1) Rules stays per-world (per-Library) — least machinery,
+static Rules not a goal; (2) Rules world-free — sources arrive through the
+solve-root registry like tables, seeding threads both memo kinds, exists()
+loses its db argument to late binding. Lean: (1), with (2) triggered only
+by the REST endpoint-generator use case reviving.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked
