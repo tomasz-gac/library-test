@@ -3,6 +3,14 @@ package com.tgac.library;
 // ABOUTME: The library domain facade — an immutable fact base with commands
 // ABOUTME: that append events and queries answered relationally by the engine.
 
+import static com.tgac.library.Schema.book;
+import static com.tgac.library.Schema.cancelled;
+import static com.tgac.library.Schema.copy;
+import static com.tgac.library.Schema.fulfilled;
+import static com.tgac.library.Schema.loan;
+import static com.tgac.library.Schema.member;
+import static com.tgac.library.Schema.reservation;
+import static com.tgac.library.Schema.returned;
 import static com.tgac.logic.unification.LVal.lval;
 import static com.tgac.logic.unification.LVar.lvar;
 
@@ -37,15 +45,15 @@ public final class Library {
 	// -- the write side: facts and events --------------------------------
 
 	public Library withBook(String isbn, String title, String author) {
-		return with(Schema.book.fact(isbn, title, author));
+		return with(book(db, lval(isbn), lval(title), lval(author)).fact());
 	}
 
 	public Library withCopy(int copyId, String isbn) {
-		return with(Schema.copy.fact(copyId, isbn));
+		return with(copy(db, lval(copyId), lval(isbn)).fact());
 	}
 
 	public Library withMember(int memberId, String name) {
-		return with(Schema.member.fact(memberId, name));
+		return with(member(db, lval(memberId), lval(name)).fact());
 	}
 
 	private Library with(Fact fact) {
@@ -60,7 +68,7 @@ public final class Library {
 		if (!denials.isEmpty()) {
 			return Try.failure(new IllegalStateException(String.join("; ", denials)));
 		}
-		return Try.success(with(Schema.loan.fact(loanId, copyId, memberId, dueDay))
+		return Try.success(with(loan(db, lval(loanId), lval(copyId), lval(memberId), lval(dueDay)).fact())
 				.fulfillReservationOf(memberId, isbnOf(copyId)));
 	}
 
@@ -69,26 +77,26 @@ public final class Library {
 		if (!denials.isEmpty()) {
 			return Try.failure(new IllegalStateException(String.join("; ", denials)));
 		}
-		return Try.success(with(Schema.reservation.fact(resId, isbn, memberId, day)));
+		return Try.success(with(reservation(db, lval(resId), lval(isbn), lval(memberId), lval(day)).fact()));
 	}
 
 	public Try<Library> cancelReservation(int resId) {
 		if (!hasLiveReservation(resId)) {
 			return Try.failure(new IllegalStateException("no reservation: " + resId));
 		}
-		return Try.success(with(Schema.cancelled.fact(resId)));
+		return Try.success(with(cancelled(db, lval(resId)).fact()));
 	}
 
 	public Try<Library> returnCopy(int loanId) {
 		if (!hasActiveLoan(loanId)) {
 			return Try.failure(new IllegalStateException("no active loan: " + loanId));
 		}
-		return Try.success(with(Schema.returned.fact(loanId)));
+		return Try.success(with(returned(db, lval(loanId)).fact()));
 	}
 
 	private String isbnOf(int copyId) {
 		Unifiable<String> i = lvar();
-		return Schema.copy.exists(db, lval(copyId), i).solve(i)
+		return copy(db, lval(copyId), i).solve(i)
 				.findFirst().map(Reified::get)
 				.orElseThrow(() -> new IllegalStateException("no such copy: " + copyId));
 	}
@@ -104,7 +112,7 @@ public final class Library {
 
 	private Library fulfillReservationOf(int memberId, String isbn) {
 		return reservationOf(memberId, isbn)
-				.map(r -> with(Schema.fulfilled.fact(r)))
+				.map(r -> with(fulfilled(db, lval(r)).fact()))
 				.orElse(this);
 	}
 
@@ -126,7 +134,7 @@ public final class Library {
 
 	public List<Integer> copiesOf(String isbn) {
 		Unifiable<Integer> c = lvar();
-		return values(Schema.copy.exists(db, c, lval(isbn)).solve(c));
+		return values(copy(db, c, lval(isbn)).solve(c));
 	}
 
 	public List<Integer> availableCopies(String isbn) {
@@ -159,7 +167,7 @@ public final class Library {
 	public List<String> titlesBy(String author) {
 		Unifiable<String> t = lvar();
 		Unifiable<String> i = lvar();
-		return values(Schema.book.exists(db, i, t, lval(author)).solve(t));
+		return values(book(db, i, t, lval(author)).solve(t));
 	}
 
 	private static <T> List<T> values(Stream<Reified<T>> answers) {

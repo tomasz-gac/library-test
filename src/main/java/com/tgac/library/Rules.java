@@ -10,6 +10,15 @@ import static com.tgac.logic.nogoods.Exclusion.exclude;
 import static com.tgac.logic.unification.LVal.lval;
 import static com.tgac.logic.unification.LVar.lvar;
 
+import static com.tgac.library.Schema.book;
+import static com.tgac.library.Schema.cancelled;
+import static com.tgac.library.Schema.copy;
+import static com.tgac.library.Schema.fulfilled;
+import static com.tgac.library.Schema.loan;
+import static com.tgac.library.Schema.member;
+import static com.tgac.library.Schema.reservation;
+import static com.tgac.library.Schema.returned;
+
 import com.tgac.logic.aggregate.Aggregate;
 import com.tgac.logic.unification.Unifiable;
 import com.tgac.pldb.inmemory.Database;
@@ -18,29 +27,37 @@ import com.tgac.pldb.relations.Relations;
 
 final class Rules {
 
+	private static final Property<Integer> loanId = Property.<Integer>of("loanId").indexed();
+	private static final Property<Integer> copyId = Property.<Integer>of("copyId").indexed();
+	private static final Property<Integer> memberId = Property.<Integer>of("memberId").indexed();
+	private static final Property<Integer> dueDay = Property.<Integer>of("dueDay");
+	private static final Property<String> isbn = Property.<String>of("isbn").indexed();
+	private static final Property<Integer> resId = Property.<Integer>of("resId").indexed();
+	private static final Property<Integer> day = Property.<Integer>of("day");
+
 	private static final Relations._4<Integer, Integer, Integer, Integer> activeLoanRel =
-			Relations.relation("activeLoan", Schema.loanId, Schema.copyId, Schema.memberId, Schema.dueDay);
+			Relations.relation("activeLoan", loanId, copyId, memberId, dueDay);
 	private static final Relations._1<Integer> onLoanRel =
-			Relations.relation("onLoan", Schema.copyId);
+			Relations.relation("onLoan", copyId);
 	private static final Relations._2<Integer, String> availableCopyRel =
-			Relations.relation("availableCopy", Schema.copyId, Schema.isbn);
+			Relations.relation("availableCopy", copyId, isbn);
 	private static final Relations._2<Integer, Integer> overdueRel =
-			Relations.relation("overdue", Schema.loanId, Schema.day);
+			Relations.relation("overdue", loanId, day);
 	private static final Relations._1<Integer> registeredMemberRel =
-			Relations.relation("registeredMember", Schema.memberId);
+			Relations.relation("registeredMember", memberId);
 	private static final Relations._1<Integer> knownCopyRel =
-			Relations.relation("knownCopy", Schema.copyId);
+			Relations.relation("knownCopy", copyId);
 	private static final Relations._4<Integer, String, Integer, Integer> liveReservationRel =
-			Relations.relation("liveReservation", Schema.resId, Schema.isbn, Schema.memberId, Schema.day);
+			Relations.relation("liveReservation", resId, isbn, memberId, day);
 	private static final Relations._2<String, Integer> queueHeadRel =
-			Relations.relation("queueHead", Schema.isbn, Schema.memberId);
+			Relations.relation("queueHead", isbn, memberId);
 	private static final Relations._1<String> knownTitleRel =
-			Relations.relation("knownTitle", Schema.isbn);
+			Relations.relation("knownTitle", isbn);
 	private static final Property<String> reason = Property.<String>of("reason");
 	private static final Relations._3<Integer, Integer, String> checkOutDenialRel =
-			Relations.relation("checkOutDenial", Schema.memberId, Schema.copyId, reason);
+			Relations.relation("checkOutDenial", memberId, copyId, reason);
 	private static final Relations._3<Integer, String, String> reserveDenialRel =
-			Relations.relation("reserveDenial", Schema.memberId, Schema.isbn, reason);
+			Relations.relation("reserveDenial", memberId, isbn, reason);
 
 	/** loan without a return event. */
 	final Relations._4<Integer, Integer, Integer, Integer>.Derived activeLoan;
@@ -90,23 +107,23 @@ final class Rules {
 
 	Rules(Database db) {
 		activeLoan = activeLoanRel.solving((l, c, m, d) ->
-				Schema.loan.exists(db, l, c, m, d)
-						.and(exclude(Schema.returned.posted(db, l))));
+				loan(db, l, c, m, d)
+						.and(exclude(returned(db, l))));
 		onLoan = onLoanRel.solving(c -> activeLoan.exists(lvar(), c, lvar(), lvar()));
 		availableCopy = availableCopyRel.solving((c, i) ->
-				Schema.copy.exists(db, c, i)
+				copy(db, c, i)
 						.and(exclude(onLoan.posted(c))));
 		overdue = overdueRel.solving((l, t) -> {
 			Unifiable<Integer> d = lvar();
 			return activeLoan.exists(l, lvar(), lvar(), d).and(lss(d, t));
 		});
-		registeredMember = registeredMemberRel.solving(m -> Schema.member.exists(db, m, lvar()));
-		knownCopy = knownCopyRel.solving(c -> Schema.copy.exists(db, c, lvar()));
-		knownTitle = knownTitleRel.solving(i -> Schema.book.exists(db, i, lvar(), lvar()));
+		registeredMember = registeredMemberRel.solving(m -> member(db, m, lvar()));
+		knownCopy = knownCopyRel.solving(c -> copy(db, c, lvar()));
+		knownTitle = knownTitleRel.solving(i -> book(db, i, lvar(), lvar()));
 		liveReservation = liveReservationRel.solving((r, i, m, d) ->
-				Schema.reservation.exists(db, r, i, m, d)
-						.and(exclude(Schema.cancelled.posted(db, r)))
-						.and(exclude(Schema.fulfilled.posted(db, r))));
+				reservation(db, r, i, m, d)
+						.and(exclude(cancelled(db, r)))
+						.and(exclude(fulfilled(db, r))));
 		queueHead = queueHeadRel.solving((i, h) -> defer(() -> {
 			Unifiable<Integer> minR = lvar();
 			return Aggregate.min(r -> defer(() -> {
@@ -126,7 +143,7 @@ final class Rules {
 								.and(r.unifies("no such copy")))
 						.or(defer(() -> {
 							Unifiable<String> i = lvar();
-							return Schema.copy.exists(db, c, i)
+							return copy(db, c, i)
 									.and(exclude(availableCopy.posted(c, i)))
 									.and(r.unifies("copy not available"));
 						}))
@@ -139,7 +156,7 @@ final class Rules {
 						.or(defer(() -> {
 							Unifiable<String> i = lvar();
 							Unifiable<Integer> h = lvar();
-							return Schema.copy.exists(db, c, i)
+							return copy(db, c, i)
 									.and(queueHead.exists(i, h))
 									.and(exclude(h.unifies(m)))
 									.and(r.unifies("title held for another member"));
