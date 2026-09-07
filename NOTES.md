@@ -344,6 +344,20 @@ Derived faces, dying with the derived-face redesign). Entry 8's is()/
 projecting names were superseded by this shape; partial mention and
 projecting remain open doors with their recorded triggers.
 
+## Receipt: entries 12 and 14 closed by the residence arc
+
+The arc landed (Sep 2026): rules are ordinary tabled goals in the solve's
+root table (Tabling.call, relation values as keys), recursion is the
+method calling itself (completion detection is the auto-tabling — no self
+handle, no ring refusal needed: rings SEAL), posted rules ride
+GoalProducer over per-posting private tables (memo and world share one
+closure), TabledSource/Derived/solving faces deleted (net −749 in pldb),
+warm start = solveFrom with a retained Table (receipted). Entry 12's
+concurrency hazards dissolve — no open entry outlives or leaves its
+solve; entry 14's design shipped essentially as written, minus the
+registry it never needed. Rules here became one method per rule; the 29
+tests never moved.
+
 ## Positive receipt: argmin is one goal, not a gap
 
 The reservation-queue head (member holding the minimum reservation id) looked

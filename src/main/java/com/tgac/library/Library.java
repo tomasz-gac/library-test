@@ -105,7 +105,7 @@ public final class Library {
 	private Optional<Integer> reservationOf(int memberId, String isbn) {
 		Unifiable<Integer> r = lvar();
 		Unifiable<Integer> d = lvar();
-		return rules.liveReservation.exists(r, lval(isbn), lval(memberId), d)
+		return rules.liveReservation(r, lval(isbn), lval(memberId), d)
 				.solve(r)
 				.findFirst().map(Reified::get);
 	}
@@ -120,14 +120,14 @@ public final class Library {
 		Unifiable<String> i = lvar();
 		Unifiable<Integer> m = lvar();
 		Unifiable<Integer> d = lvar();
-		return rules.liveReservation.exists(lval(resId), i, m, d).solve(i).findAny().isPresent();
+		return rules.liveReservation(lval(resId), i, m, d).solve(i).findAny().isPresent();
 	}
 
 	private boolean hasActiveLoan(int loanId) {
 		Unifiable<Integer> c = lvar();
 		Unifiable<Integer> m = lvar();
 		Unifiable<Integer> d = lvar();
-		return rules.activeLoan.exists(lval(loanId), c, m, d).solve(c).findAny().isPresent();
+		return rules.activeLoan(lval(loanId), c, m, d).solve(c).findAny().isPresent();
 	}
 
 	// -- the read side: relational queries -------------------------------
@@ -139,29 +139,29 @@ public final class Library {
 
 	public List<Integer> availableCopies(String isbn) {
 		Unifiable<Integer> c = lvar();
-		return values(rules.availableCopy.exists(c, lval(isbn)).solve(c));
+		return values(rules.availableCopy(c, lval(isbn)).solve(c));
 	}
 
 	public List<Integer> overdueLoans(int today) {
 		Unifiable<Integer> l = lvar();
-		return values(rules.overdue.exists(l, lval(today)).solve(l));
+		return values(rules.overdue(l, lval(today)).solve(l));
 	}
 
 	public Optional<Integer> nextInQueue(String isbn) {
 		Unifiable<Integer> h = lvar();
-		return rules.queueHead.exists(lval(isbn), h).solve(h).findFirst().map(Reified::get);
+		return rules.queueHead(lval(isbn), h).solve(h).findFirst().map(Reified::get);
 	}
 
 	/** Every rule the checkout would violate, by name; empty means allowed. */
 	public List<String> checkOutDenials(int memberId, int copyId) {
 		Unifiable<String> r = lvar();
-		return values(rules.checkOutDenial.exists(lval(memberId), lval(copyId), r).solve(r));
+		return values(rules.checkOutDenial(lval(memberId), lval(copyId), r).solve(r));
 	}
 
 	/** Every rule the reservation would violate, by name; empty means allowed. */
 	public List<String> reserveDenials(int memberId, String isbn) {
 		Unifiable<String> r = lvar();
-		return values(rules.reserveDenial.exists(lval(memberId), lval(isbn), r).solve(r));
+		return values(rules.reserveDenial(lval(memberId), lval(isbn), r).solve(r));
 	}
 
 	public List<String> titlesBy(String author) {
