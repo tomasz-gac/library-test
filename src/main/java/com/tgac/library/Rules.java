@@ -23,7 +23,6 @@ import com.tgac.logic.aggregate.Aggregate;
 import com.tgac.logic.unification.Unifiable;
 import com.tgac.pldb.inmemory.Database;
 import com.tgac.pldb.relations.Literal;
-import com.tgac.pldb.relations.Rule;
 
 final class Rules {
 
@@ -34,7 +33,7 @@ final class Rules {
 	}
 
 	/** loan without a return event. */
-	Rule activeLoan(Unifiable<Integer> loanId, Unifiable<Integer> copyId,
+	Literal activeLoan(Unifiable<Integer> loanId, Unifiable<Integer> copyId,
 			Unifiable<Integer> memberId, Unifiable<Integer> dueDay) {
 		return Literal.relation("activeLoan")
 				.arg("loanId", loanId)
@@ -50,14 +49,14 @@ final class Rules {
 	 * rows, so "no active loan for this copy" needs the projection named as
 	 * its own relation before it can be denied.
 	 */
-	Rule onLoan(Unifiable<Integer> copyId) {
+	Literal onLoan(Unifiable<Integer> copyId) {
 		return Literal.relation("onLoan")
 				.arg("copyId", copyId)
 				.solving(activeLoan(lvar(), copyId, lvar(), lvar()));
 	}
 
 	/** copy not on loan. */
-	Rule availableCopy(Unifiable<Integer> copyId, Unifiable<String> isbn) {
+	Literal availableCopy(Unifiable<Integer> copyId, Unifiable<String> isbn) {
 		return Literal.relation("availableCopy")
 				.arg("copyId", copyId)
 				.arg("isbn", isbn)
@@ -66,7 +65,7 @@ final class Rules {
 	}
 
 	/** active loan whose due day lies strictly before the given day. */
-	Rule overdue(Unifiable<Integer> loanId, Unifiable<Integer> today) {
+	Literal overdue(Unifiable<Integer> loanId, Unifiable<Integer> today) {
 		Unifiable<Integer> d = lvar();
 		return Literal.relation("overdue")
 				.arg("loanId", loanId)
@@ -75,28 +74,28 @@ final class Rules {
 	}
 
 	/** ∃-projection of member onto the id. */
-	Rule registeredMember(Unifiable<Integer> memberId) {
+	Literal registeredMember(Unifiable<Integer> memberId) {
 		return Literal.relation("registeredMember")
 				.arg("memberId", memberId)
 				.solving(member(db, memberId, lvar()));
 	}
 
 	/** ∃-projection of copy onto the id. */
-	Rule knownCopy(Unifiable<Integer> copyId) {
+	Literal knownCopy(Unifiable<Integer> copyId) {
 		return Literal.relation("knownCopy")
 				.arg("copyId", copyId)
 				.solving(copy(db, copyId, lvar()));
 	}
 
 	/** ∃-projection of book onto the isbn. */
-	Rule knownTitle(Unifiable<String> isbn) {
+	Literal knownTitle(Unifiable<String> isbn) {
 		return Literal.relation("knownTitle")
 				.arg("isbn", isbn)
 				.solving(book(db, isbn, lvar(), lvar()));
 	}
 
 	/** reservation without a cancellation or fulfillment event. */
-	Rule liveReservation(Unifiable<Integer> resId, Unifiable<String> isbn,
+	Literal liveReservation(Unifiable<Integer> resId, Unifiable<String> isbn,
 			Unifiable<Integer> memberId, Unifiable<Integer> day) {
 		return Literal.relation("liveReservation")
 				.arg("resId", resId)
@@ -113,7 +112,7 @@ final class Rules {
 	 * in order, so min id is FIFO. Mode-restricted: the aggregate inside
 	 * needs the isbn ground at the probe.
 	 */
-	Rule queueHead(Unifiable<String> isbn, Unifiable<Integer> memberId) {
+	Literal queueHead(Unifiable<String> isbn, Unifiable<Integer> memberId) {
 		return Literal.relation("queueHead")
 				.arg("isbn", isbn)
 				.arg("memberId", memberId)
@@ -130,7 +129,7 @@ final class Rules {
 	 * the ABSENCE of denials — there is no positive twin to drift from.
 	 * Mode-restricted: the loan-limit count needs member and copy ground.
 	 */
-	Rule checkOutDenial(Unifiable<Integer> memberId, Unifiable<Integer> copyId,
+	Literal checkOutDenial(Unifiable<Integer> memberId, Unifiable<Integer> copyId,
 			Unifiable<String> reason) {
 		return Literal.relation("checkOutDenial")
 				.arg("memberId", memberId)
@@ -164,7 +163,7 @@ final class Rules {
 	}
 
 	/** The reserve policy's complement, same shape as checkOutDenial. */
-	Rule reserveDenial(Unifiable<Integer> memberId, Unifiable<String> isbn,
+	Literal reserveDenial(Unifiable<Integer> memberId, Unifiable<String> isbn,
 			Unifiable<String> reason) {
 		return Literal.relation("reserveDenial")
 				.arg("memberId", memberId)
