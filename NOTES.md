@@ -349,9 +349,12 @@ projecting remain open doors with their recorded triggers.
 The arc landed (Sep 2026): rules are ordinary tabled goals in the solve's
 root table (Tabling.call, relation values as keys), recursion is the
 method calling itself (completion detection is the auto-tabling — no self
-handle, no ring refusal needed: rings SEAL), posted rules ride
-GoalProducer over per-posting private tables (memo and world share one
-closure), TabledSource/Derived/solving faces deleted (net −749 in pldb),
+handle, no ring refusal needed: rings SEAL), posted rules compose
+GoalProducer with the SOLVE's table at wake (the private-table variant
+was tried and reverted: fresh worlds per trial level made unstratified
+negation an invisible livelock; shared tables turn it into a strand
+refusal naming the relation's channel — receipted in
+UnstratifiedNegationTest), TabledSource/Derived/solving faces deleted (net −749 in pldb),
 warm start = solveFrom with a retained Table (receipted). Entry 12's
 concurrency hazards dissolve — no open entry outlives or leaves its
 solve; entry 14's design shipped essentially as written, minus the
