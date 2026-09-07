@@ -373,3 +373,21 @@ so it isn't re-derived.
 Aggregate.count over activeLoan (a Derived, hence tabled production behind a
 LookupGoal) folds correctly — the historical "findall over a cold tabled goal
 is empty" probe did not reproduce. The borrow-limit policy stands on it.
+
+## 20. Arithmetic cannot derive: addo over unbounded ints keeps forever
+
+Wanted: the due day as FD arithmetic — addo(day, len, due) in the dueDate
+rule, two ground arguments inferring the third. Had to: Projection.project
+(suspend until day and len ground, unify due with the Java sum) — mode-
+restricted and one-directional: the rule no longer runs backwards (given
+due, infer the checkout day). Mechanism, verified in FiniteDomain: letDomain
+drops a domain-less free variable, so gated answers keep — without a
+declared domain there is nowhere to RECORD the inferred value, and the wide
+watched var then trips "Variables without domain" at enforce. In the
+no-declared-domain regime every FD constraint is a ground filter, never a
+deriver (lss and addo alike). What the engine would need: the first-class-
+domain carriers from the generators-vs-filters discussion — a carrier that
+holds "exactly 17" or a half-space over unbounded ints without finite
+enumeration; with it addo's collapse binds the third argument and dueDate
+becomes fully relational. The second pull receipt for that arc, one day
+after the first (entry 2's dates).

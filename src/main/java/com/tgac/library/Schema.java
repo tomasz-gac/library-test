@@ -30,11 +30,23 @@ public final class Schema {
 				.from(db);
 	}
 
-	/** A registered member. */
-	public static Literal member(AnswerSource db, Unifiable<Integer> memberId, Unifiable<String> name) {
+	/** A registered member and the tier they hold. */
+	public static Literal member(AnswerSource db, Unifiable<Integer> memberId, Unifiable<String> name,
+			Unifiable<String> tier) {
 		return Literal.relation("member")
 				.arg("memberId", memberId).indexed()
 				.arg("name", name)
+				.arg("tier", tier).indexed()
+				.from(db);
+	}
+
+	/** A membership tier's lending policy: how many loans, for how long. */
+	public static Literal tier(AnswerSource db, Unifiable<String> name, Unifiable<Integer> loanLimit,
+			Unifiable<Integer> loanDays) {
+		return Literal.relation("tier")
+				.arg("name", name).indexed()
+				.arg("loanLimit", loanLimit)
+				.arg("loanDays", loanDays)
 				.from(db);
 	}
 

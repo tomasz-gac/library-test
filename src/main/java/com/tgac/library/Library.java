@@ -28,8 +28,6 @@ import java.util.stream.Stream;
 
 public final class Library {
 
-	public static final int LOAN_LIMIT = 3;
-
 	private final Database db;
 	private final Rules rules;
 
@@ -52,8 +50,12 @@ public final class Library {
 		return with(copy(db, lval(copyId), lval(isbn)).fact());
 	}
 
-	public Library withMember(int memberId, String name) {
-		return with(member(db, lval(memberId), lval(name)).fact());
+	public Library withMember(int memberId, String name, String tier) {
+		return with(member(db, lval(memberId), lval(name), lval(tier)).fact());
+	}
+
+	public Library withTier(String name, int loanLimit, int loanDays) {
+		return with(Schema.tier(db, lval(name), lval(loanLimit), lval(loanDays)).fact());
 	}
 
 	private Library with(Fact fact) {
@@ -63,13 +65,22 @@ public final class Library {
 
 	// -- commands --------------------------------------------------------
 
-	public Try<Library> checkOut(int loanId, int copyId, int memberId, int dueDay) {
+	public Try<Library> checkOut(int loanId, int copyId, int memberId, int day) {
 		List<String> denials = checkOutDenials(memberId, copyId);
 		if (!denials.isEmpty()) {
 			return Try.failure(new IllegalStateException(String.join("; ", denials)));
 		}
-		return Try.success(with(loan(db, lval(loanId), lval(copyId), lval(memberId), lval(dueDay)).fact())
+		return Try.success(with(loan(db, lval(loanId), lval(copyId), lval(memberId),
+				lval(dueDayOf(memberId, day))).fact())
 				.fulfillReservationOf(memberId, isbnOf(copyId)));
+	}
+
+	/** The due day the member's tier grants from the checkout day. */
+	private int dueDayOf(int memberId, int day) {
+		Unifiable<Integer> due = lvar();
+		return rules.dueDate(lval(memberId), lval(day), due).solve(due)
+				.findFirst().map(Reified::get)
+				.orElseThrow(() -> new IllegalStateException("no loan policy: " + memberId));
 	}
 
 	public Try<Library> reserve(int resId, String isbn, int memberId, int day) {

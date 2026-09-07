@@ -11,13 +11,14 @@ public class LibraryTest {
 
 	private static Library stocked() {
 		return Library.empty()
+				.withTier("standard", 3, 14)
 				.withBook("978-0", "SICP", "Abelson")
 				.withBook("978-1", "TAPL", "Pierce")
 				.withCopy(1, "978-0")
 				.withCopy(2, "978-0")
 				.withCopy(3, "978-1")
-				.withMember(100, "Ada")
-				.withMember(101, "Alan");
+				.withMember(100, "Ada", "standard")
+				.withMember(101, "Alan", "standard");
 	}
 
 	@Test

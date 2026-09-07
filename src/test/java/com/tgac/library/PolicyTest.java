@@ -11,23 +11,25 @@ public class PolicyTest {
 
 	private static Library stocked() {
 		return Library.empty()
+				.withTier("standard", 3, 14)
 				.withBook("978-0", "SICP", "Abelson")
 				.withCopy(1, "978-0")
 				.withCopy(2, "978-0")
 				.withCopy(3, "978-0")
 				.withCopy(4, "978-0")
-				.withMember(100, "Ada")
-				.withMember(101, "Alan");
+				.withMember(100, "Ada", "standard")
+				.withMember(101, "Alan", "standard");
 	}
 
 	@Test
 	public void overdueLoansAreThoseDueBeforeToday() {
+		// standard lends for 14 days: checkouts on 30 and 60 fall due 44 and 74
 		Library lib = stocked()
 				.checkOut(500, 1, 100, 30).get()
 				.checkOut(501, 2, 100, 60).get();
 		assertThat(lib.overdueLoans(45)).containsExactlyInAnyOrder(500);
 		assertThat(lib.overdueLoans(20)).isEmpty();
-		assertThat(lib.overdueLoans(61)).containsExactlyInAnyOrder(500, 501);
+		assertThat(lib.overdueLoans(75)).containsExactlyInAnyOrder(500, 501);
 	}
 
 	@Test

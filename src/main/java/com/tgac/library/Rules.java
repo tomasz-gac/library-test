@@ -4,6 +4,7 @@ package com.tgac.library;
 // ABOUTME: bodies in literal style: negation over events, argmin queues, denials.
 
 import static com.tgac.logic.finitedomain.FiniteDomain.geq;
+import static com.tgac.logic.projection.Projection.project;
 import static com.tgac.logic.finitedomain.FiniteDomain.lss;
 import static com.tgac.logic.goals.Goal.defer;
 import static com.tgac.logic.nogoods.Exclusion.exclude;
@@ -18,6 +19,7 @@ import static com.tgac.library.Schema.loan;
 import static com.tgac.library.Schema.member;
 import static com.tgac.library.Schema.reservation;
 import static com.tgac.library.Schema.returned;
+import static com.tgac.library.Schema.tier;
 
 import com.tgac.logic.aggregate.Aggregate;
 import com.tgac.logic.unification.Unifiable;
@@ -77,7 +79,43 @@ final class Rules {
 	Literal registeredMember(Unifiable<Integer> memberId) {
 		return Literal.relation("registeredMember")
 				.arg("memberId", memberId)
-				.solving(member(db, memberId, lvar()));
+				.solving(member(db, memberId, lvar(), lvar()));
+	}
+
+	/** The member's lending policy, read through their tier. */
+	Literal loanPolicy(Unifiable<Integer> memberId, Unifiable<Integer> loanLimit,
+			Unifiable<Integer> loanDays) {
+		Unifiable<String> t = lvar();
+		return Literal.relation("loanPolicy")
+				.arg("memberId", memberId)
+				.arg("loanLimit", loanLimit)
+				.arg("loanDays", loanDays)
+				.solving(member(db, memberId, lvar(), t)
+								.and(tier(db, t, loanLimit, loanDays)));
+	}
+
+	/** ∃-projection of loanPolicy onto the member. */
+	Literal hasLoanPolicy(Unifiable<Integer> memberId) {
+		return Literal.relation("hasLoanPolicy")
+				.arg("memberId", memberId)
+				.solving(loanPolicy(memberId, lvar(), lvar()));
+	}
+
+	/**
+	 * The loan's due day: the checkout day plus the member's tier length.
+	 * Mode-restricted: the sum is a projection, so day and length must
+	 * ground at the probe — addo cannot infer over unbounded ints (no
+	 * domain to record the result in; see NOTES entry 20).
+	 */
+	Literal dueDate(Unifiable<Integer> memberId, Unifiable<Integer> day,
+			Unifiable<Integer> dueDay) {
+		Unifiable<Integer> len = lvar();
+		return Literal.relation("dueDate")
+				.arg("memberId", memberId)
+				.arg("day", day)
+				.arg("dueDay", dueDay)
+				.solving(loanPolicy(memberId, lvar(), len)
+								.and(project(day, len, (d, l) -> dueDay.unifies(d + l))));
 	}
 
 	/** ∃-projection of copy onto the id. */
@@ -139,6 +177,9 @@ final class Rules {
 								.and(reason.unifies("not a member"))
 								.or(exclude(knownCopy(copyId))
 										.and(reason.unifies("no such copy")))
+								.or(registeredMember(memberId)
+										.and(exclude(hasLoanPolicy(memberId)))
+										.and(reason.unifies("no loan policy")))
 								.or(defer(() -> {
 									Unifiable<String> i = lvar();
 									return copy(db, copyId, i)
@@ -147,9 +188,11 @@ final class Rules {
 								}))
 								.or(defer(() -> {
 									Unifiable<Integer> n = lvar();
-									return Aggregate.<Integer>count(
-													l -> activeLoan(l, lvar(), memberId, lvar()), n)
-											.and(geq(n, lval(Library.LOAN_LIMIT)))
+									Unifiable<Integer> limit = lvar();
+									return loanPolicy(memberId, limit, lvar())
+											.and(Aggregate.<Integer>count(
+													l -> activeLoan(l, lvar(), memberId, lvar()), n))
+											.and(geq(n, limit))
 											.and(reason.unifies("at loan limit"));
 								}))
 								.or(defer(() -> {

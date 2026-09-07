@@ -12,12 +12,13 @@ public class ReservationTest {
 
 	private static Library stocked() {
 		return Library.empty()
+				.withTier("standard", 3, 14)
 				.withBook("978-0", "SICP", "Abelson")
 				.withCopy(1, "978-0")
 				.withCopy(2, "978-0")
-				.withMember(100, "Ada")
-				.withMember(101, "Alan")
-				.withMember(102, "Kurt");
+				.withMember(100, "Ada", "standard")
+				.withMember(101, "Alan", "standard")
+				.withMember(102, "Kurt", "standard");
 	}
 
 	@Test
