@@ -35,13 +35,13 @@ final class Rules {
 	/** loan without a return event. */
 	Literal activeLoan(Unifiable<Integer> loanId, Unifiable<Integer> copyId,
 			Unifiable<Integer> memberId, Unifiable<Integer> dueDay) {
-		return Literal.solving("activeLoan",
-						loan(db, loanId, copyId, memberId, dueDay)
-								.and(exclude(returned(db, loanId))))
+		return Literal.relation("activeLoan")
 				.arg("loanId", loanId)
 				.arg("copyId", copyId)
 				.arg("memberId", memberId)
-				.arg("dueDay", dueDay);
+				.arg("dueDay", dueDay)
+				.solving(loan(db, loanId, copyId, memberId, dueDay)
+								.and(exclude(returned(db, loanId))));
 	}
 
 	/**
@@ -50,57 +50,61 @@ final class Rules {
 	 * its own relation before it can be denied.
 	 */
 	Literal onLoan(Unifiable<Integer> copyId) {
-		return Literal.solving("onLoan", activeLoan(lvar(), copyId, lvar(), lvar()))
-				.arg("copyId", copyId);
+		return Literal.relation("onLoan")
+				.arg("copyId", copyId)
+				.solving(activeLoan(lvar(), copyId, lvar(), lvar()));
 	}
 
 	/** copy not on loan. */
 	Literal availableCopy(Unifiable<Integer> copyId, Unifiable<String> isbn) {
-		return Literal.solving("availableCopy",
-						copy(db, copyId, isbn)
-								.and(exclude(onLoan(copyId))))
+		return Literal.relation("availableCopy")
 				.arg("copyId", copyId)
-				.arg("isbn", isbn);
+				.arg("isbn", isbn)
+				.solving(copy(db, copyId, isbn)
+								.and(exclude(onLoan(copyId))));
 	}
 
 	/** active loan whose due day lies strictly before the given day. */
 	Literal overdue(Unifiable<Integer> loanId, Unifiable<Integer> today) {
 		Unifiable<Integer> d = lvar();
-		return Literal.solving("overdue",
-						activeLoan(loanId, lvar(), lvar(), d).and(lss(d, today)))
+		return Literal.relation("overdue")
 				.arg("loanId", loanId)
-				.arg("day", today);
+				.arg("day", today)
+				.solving(activeLoan(loanId, lvar(), lvar(), d).and(lss(d, today)));
 	}
 
 	/** ∃-projection of member onto the id. */
 	Literal registeredMember(Unifiable<Integer> memberId) {
-		return Literal.solving("registeredMember", member(db, memberId, lvar()))
-				.arg("memberId", memberId);
+		return Literal.relation("registeredMember")
+				.arg("memberId", memberId)
+				.solving(member(db, memberId, lvar()));
 	}
 
 	/** ∃-projection of copy onto the id. */
 	Literal knownCopy(Unifiable<Integer> copyId) {
-		return Literal.solving("knownCopy", copy(db, copyId, lvar()))
-				.arg("copyId", copyId);
+		return Literal.relation("knownCopy")
+				.arg("copyId", copyId)
+				.solving(copy(db, copyId, lvar()));
 	}
 
 	/** ∃-projection of book onto the isbn. */
 	Literal knownTitle(Unifiable<String> isbn) {
-		return Literal.solving("knownTitle", book(db, isbn, lvar(), lvar()))
-				.arg("isbn", isbn);
+		return Literal.relation("knownTitle")
+				.arg("isbn", isbn)
+				.solving(book(db, isbn, lvar(), lvar()));
 	}
 
 	/** reservation without a cancellation or fulfillment event. */
 	Literal liveReservation(Unifiable<Integer> resId, Unifiable<String> isbn,
 			Unifiable<Integer> memberId, Unifiable<Integer> day) {
-		return Literal.solving("liveReservation",
-						reservation(db, resId, isbn, memberId, day)
-								.and(exclude(cancelled(db, resId)))
-								.and(exclude(fulfilled(db, resId))))
+		return Literal.relation("liveReservation")
 				.arg("resId", resId)
 				.arg("isbn", isbn)
 				.arg("memberId", memberId)
-				.arg("day", day);
+				.arg("day", day)
+				.solving(reservation(db, resId, isbn, memberId, day)
+								.and(exclude(cancelled(db, resId)))
+								.and(exclude(fulfilled(db, resId))));
 	}
 
 	/**
@@ -109,13 +113,14 @@ final class Rules {
 	 * needs the isbn ground at the probe.
 	 */
 	Literal queueHead(Unifiable<String> isbn, Unifiable<Integer> memberId) {
-		return Literal.solving("queueHead", defer(() -> {
+		return Literal.relation("queueHead")
+				.arg("isbn", isbn)
+				.arg("memberId", memberId)
+				.solving(defer(() -> {
 					Unifiable<Integer> minR = lvar();
 					return Aggregate.min(r -> liveReservation(r, isbn, lvar(), lvar()), minR)
 							.and(liveReservation(minR, isbn, memberId, lvar()));
-				}))
-				.arg("isbn", isbn)
-				.arg("memberId", memberId);
+				}));
 	}
 
 	/**
@@ -126,8 +131,11 @@ final class Rules {
 	 */
 	Literal checkOutDenial(Unifiable<Integer> memberId, Unifiable<Integer> copyId,
 			Unifiable<String> reason) {
-		return Literal.solving("checkOutDenial",
-						exclude(registeredMember(memberId))
+		return Literal.relation("checkOutDenial")
+				.arg("memberId", memberId)
+				.arg("copyId", copyId)
+				.arg("reason", reason)
+				.solving(exclude(registeredMember(memberId))
 								.and(reason.unifies("not a member"))
 								.or(exclude(knownCopy(copyId))
 										.and(reason.unifies("no such copy")))
@@ -151,24 +159,21 @@ final class Rules {
 											.and(queueHead(i, h))
 											.and(exclude(h.unifies(memberId)))
 											.and(reason.unifies("title held for another member"));
-								})))
-				.arg("memberId", memberId)
-				.arg("copyId", copyId)
-				.arg("reason", reason);
+								})));
 	}
 
 	/** The reserve policy's complement, same shape as checkOutDenial. */
 	Literal reserveDenial(Unifiable<Integer> memberId, Unifiable<String> isbn,
 			Unifiable<String> reason) {
-		return Literal.solving("reserveDenial",
-						exclude(registeredMember(memberId))
+		return Literal.relation("reserveDenial")
+				.arg("memberId", memberId)
+				.arg("isbn", isbn)
+				.arg("reason", reason)
+				.solving(exclude(registeredMember(memberId))
 								.and(reason.unifies("not a member"))
 								.or(exclude(knownTitle(isbn))
 										.and(reason.unifies("no such title")))
 								.or(liveReservation(lvar(), isbn, memberId, lvar())
-										.and(reason.unifies("already holds a reservation"))))
-				.arg("memberId", memberId)
-				.arg("isbn", isbn)
-				.arg("reason", reason);
+										.and(reason.unifies("already holds a reservation"))));
 	}
 }
