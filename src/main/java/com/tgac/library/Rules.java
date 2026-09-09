@@ -23,14 +23,14 @@ import static com.tgac.library.Schema.tier;
 
 import com.tgac.logic.aggregate.Aggregate;
 import com.tgac.logic.unification.Unifiable;
-import com.tgac.pldb.inmemory.Database;
+import com.tgac.pldb.AnswerSource;
 import com.tgac.pldb.relations.Literal;
 
 final class Rules {
 
-	private final Database db;
+	private final AnswerSource db;
 
-	Rules(Database db) {
+	Rules(AnswerSource db) {
 		this.db = db;
 	}
 

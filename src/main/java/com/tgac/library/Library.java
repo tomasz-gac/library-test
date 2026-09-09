@@ -14,11 +14,13 @@ import static com.tgac.library.Schema.returned;
 import static com.tgac.logic.unification.LVal.lval;
 import static com.tgac.logic.unification.LVar.lvar;
 
+import com.tgac.functional.category.Nothing;
 import com.tgac.logic.unification.Reified;
 import com.tgac.logic.unification.Unifiable;
-import com.tgac.pldb.inmemory.Database;
-import com.tgac.pldb.inmemory.ImmutableDatabase;
+import com.tgac.pldb.inmemory.SharedDatabase;
 import com.tgac.pldb.relations.Fact;
+import com.tgac.pldb.transaction.AbstractTransaction;
+import com.tgac.pldb.transaction.Transaction;
 import io.vavr.control.Try;
 import java.util.Collections;
 import java.util.List;
@@ -28,16 +30,30 @@ import java.util.stream.Stream;
 
 public final class Library {
 
-	private final Database db;
+	private final Transaction db;
 	private final Rules rules;
 
-	private Library(Database db) {
+	private Library(Transaction db) {
 		this.db = db;
 		this.rules = new Rules(db);
 	}
 
+	/** A private one-history world — the pure-value mode for tests and demos. */
 	public static Library empty() {
-		return new Library(ImmutableDatabase.empty());
+		return over(AbstractTransaction.over(SharedDatabase.empty().open("library")));
+	}
+
+	public static Library over(Transaction transaction) {
+		return new Library(transaction);
+	}
+
+	/**
+	 * The write face: everything appended by this value's lineage lands,
+	 * certified against the reads that justified it; a {@code Conflict}
+	 * failure means the world moved — reopen and re-solve.
+	 */
+	public Try<Nothing> commit() {
+		return db.commit();
 	}
 
 	// -- the write side: facts and events --------------------------------
