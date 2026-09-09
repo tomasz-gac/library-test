@@ -391,3 +391,30 @@ holds "exactly 17" or a half-space over unbounded ints without finite
 enumeration; with it addo's collapse binds the third argument and dueDate
 becomes fully relational. The second pull receipt for that arc, one day
 after the first (entry 2's dates).
+
+## 21. The facade wrapped an AutoCloseable and forgot the door
+
+Wanted: nothing — the in-memory Library never hinted at it. Had to: add
+Library.close() when the PG lane HUNG — an abandoned library holds an
+idle-in-transaction connection (the pin anchor starts a real
+transaction at open), and the next DROP TABLE blocks forever behind it.
+The lesson: a resource-shaped gap can be invisible in every tier whose
+resources are free; the migration to a backend with real sessions is
+what audits the API. Memory snapshots close as garbage collection; PG
+snapshots close as a protocol.
+
+## Receipt: entries 11/13/15 closed by the transaction
+
+The transactional port shipped (Sep 2026) essentially as entry 11
+prescribed, with the pins of entry 13 built as the certify rather than
+deferred: Library rides a Transaction (reads recorded, appends staged,
+commit() the write face, close() ends the lineage), and the serialization
+is the source's declared capability — native (PG's SSI rented) or
+simulated (watermark marks per relation; SharedDatabase's generations in
+memory). Entry 15's scoping held: every memo lives exactly as long as
+its transaction. The double checkout — the write-skew scenario that
+drove the whole design — is receipted on memory and real PG through
+both kinds: first commit wins, second meets Conflict, the retry answers
+"copy not available". Deferred with named triggers: region-grain
+certify, REST (ETag/If-Match is the same protocol; waits on the async
+seam and as-of reads), multi-source commits.
