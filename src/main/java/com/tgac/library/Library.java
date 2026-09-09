@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class Library {
+public final class Library implements AutoCloseable {
 
 	private final Transaction db;
 	private final Rules rules;
@@ -54,6 +54,12 @@ public final class Library {
 	 */
 	public Try<Nothing> commit() {
 		return db.commit();
+	}
+
+	/** Ends the transaction; every value of this lineage is spent with it. */
+	@Override
+	public void close() throws Exception {
+		db.close();
 	}
 
 	// -- the write side: facts and events --------------------------------
