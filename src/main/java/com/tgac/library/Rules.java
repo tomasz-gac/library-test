@@ -20,6 +20,7 @@ import static com.tgac.library.Schema.member;
 import static com.tgac.library.Schema.reservation;
 import static com.tgac.library.Schema.returned;
 import static com.tgac.library.Schema.tier;
+import static com.tgac.pldb.relations.Projected.projected;
 
 import com.tgac.logic.aggregate.Aggregate;
 import com.tgac.logic.unification.Unifiable;
@@ -46,24 +47,13 @@ final class Rules {
 								.and(exclude(returned(db, loanId))));
 	}
 
-	/**
-	 * The ∃-projection of activeLoan onto the copy: negation is over WHOLE
-	 * rows, so "no active loan for this copy" needs the projection named as
-	 * its own relation before it can be denied.
-	 */
-	Literal onLoan(Unifiable<Integer> copyId) {
-		return Literal.relation("onLoan")
-				.arg("copyId", copyId)
-				.solving(activeLoan(lvar(), copyId, lvar(), lvar()));
-	}
-
-	/** copy not on loan. */
+	/** copy not on loan: ¬∃ of activeLoan onto the copy, stated inline. */
 	Literal availableCopy(Unifiable<Integer> copyId, Unifiable<String> isbn) {
 		return Literal.relation("availableCopy")
 				.arg("copyId", copyId)
 				.arg("isbn", isbn)
 				.solving(copy(db, copyId, isbn)
-								.and(exclude(onLoan(copyId))));
+								.and(exclude(activeLoan(projected(), copyId, projected(), projected()))));
 	}
 
 	/** active loan whose due day lies strictly before the given day. */
@@ -73,13 +63,6 @@ final class Rules {
 				.arg("loanId", loanId)
 				.arg("day", today)
 				.solving(activeLoan(loanId, lvar(), lvar(), d).and(lss(d, today)));
-	}
-
-	/** ∃-projection of member onto the id. */
-	Literal registeredMember(Unifiable<Integer> memberId) {
-		return Literal.relation("registeredMember")
-				.arg("memberId", memberId)
-				.solving(member(db, memberId, lvar(), lvar()));
 	}
 
 	/** The member's lending policy, read through their tier. */
@@ -92,13 +75,6 @@ final class Rules {
 				.arg("loanDays", loanDays)
 				.solving(member(db, memberId, lvar(), t)
 								.and(tier(db, t, loanLimit, loanDays)));
-	}
-
-	/** ∃-projection of loanPolicy onto the member. */
-	Literal hasLoanPolicy(Unifiable<Integer> memberId) {
-		return Literal.relation("hasLoanPolicy")
-				.arg("memberId", memberId)
-				.solving(loanPolicy(memberId, lvar(), lvar()));
 	}
 
 	/**
@@ -116,20 +92,6 @@ final class Rules {
 				.arg("dueDay", dueDay)
 				.solving(loanPolicy(memberId, lvar(), len)
 								.and(project(day, len, (d, l) -> dueDay.unifies(d + l))));
-	}
-
-	/** ∃-projection of copy onto the id. */
-	Literal knownCopy(Unifiable<Integer> copyId) {
-		return Literal.relation("knownCopy")
-				.arg("copyId", copyId)
-				.solving(copy(db, copyId, lvar()));
-	}
-
-	/** ∃-projection of book onto the isbn. */
-	Literal knownTitle(Unifiable<String> isbn) {
-		return Literal.relation("knownTitle")
-				.arg("isbn", isbn)
-				.solving(book(db, isbn, lvar(), lvar()));
 	}
 
 	/** reservation without a cancellation or fulfillment event. */
@@ -173,12 +135,12 @@ final class Rules {
 				.arg("memberId", memberId)
 				.arg("copyId", copyId)
 				.arg("reason", reason)
-				.solving(exclude(registeredMember(memberId))
+				.solving(exclude(member(db, memberId, projected(), projected()))
 								.and(reason.unifies("not a member"))
-								.or(exclude(knownCopy(copyId))
+								.or(exclude(copy(db, copyId, projected()))
 										.and(reason.unifies("no such copy")))
-								.or(registeredMember(memberId)
-										.and(exclude(hasLoanPolicy(memberId)))
+								.or(member(db, memberId, projected(), projected())
+										.and(exclude(loanPolicy(memberId, projected(), projected())))
 										.and(reason.unifies("no loan policy")))
 								.or(defer(() -> {
 									Unifiable<String> i = lvar();
@@ -212,9 +174,9 @@ final class Rules {
 				.arg("memberId", memberId)
 				.arg("isbn", isbn)
 				.arg("reason", reason)
-				.solving(exclude(registeredMember(memberId))
+				.solving(exclude(member(db, memberId, projected(), projected()))
 								.and(reason.unifies("not a member"))
-								.or(exclude(knownTitle(isbn))
+								.or(exclude(book(db, isbn, projected(), projected()))
 										.and(reason.unifies("no such title")))
 								.or(liveReservation(lvar(), isbn, memberId, lvar())
 										.and(reason.unifies("already holds a reservation"))));
