@@ -18,11 +18,10 @@ import com.tgac.functional.category.Nothing;
 import com.tgac.logic.unification.Reified;
 import com.tgac.logic.unification.Unifiable;
 import com.tgac.pldb.inmemory.SharedDatabase;
-import com.tgac.pldb.relations.Fact;
+import com.tgac.pldb.relations.Literal;
 import com.tgac.pldb.transaction.AbstractTransaction;
 import com.tgac.pldb.transaction.Transaction;
 import io.vavr.control.Try;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,23 +64,23 @@ public final class Library implements AutoCloseable {
 	// -- the write side: facts and events --------------------------------
 
 	public Library withBook(String isbn, String title, String author) {
-		return with(book(db, lval(isbn), lval(title), lval(author)).fact());
+		return with(book(db, lval(isbn), lval(title), lval(author)));
 	}
 
 	public Library withCopy(int copyId, String isbn) {
-		return with(copy(db, lval(copyId), lval(isbn)).fact());
+		return with(copy(db, lval(copyId), lval(isbn)));
 	}
 
 	public Library withMember(int memberId, String name, String tier) {
-		return with(member(db, lval(memberId), lval(name), lval(tier)).fact());
+		return with(member(db, lval(memberId), lval(name), lval(tier)));
 	}
 
 	public Library withTier(String name, int loanLimit, int loanDays) {
-		return with(Schema.tier(db, lval(name), lval(loanLimit), lval(loanDays)).fact());
+		return with(Schema.tier(db, lval(name), lval(loanLimit), lval(loanDays)));
 	}
 
-	private Library with(Fact fact) {
-		return new Library(db.withFacts(Collections.singletonList(fact)).get());
+	private Library with(Literal row) {
+		return new Library(db.withFacts(row).get());
 	}
 
 
@@ -93,7 +92,7 @@ public final class Library implements AutoCloseable {
 			return Try.failure(new IllegalStateException(String.join("; ", denials)));
 		}
 		return Try.success(with(loan(db, lval(loanId), lval(copyId), lval(memberId),
-				lval(dueDayOf(memberId, day))).fact())
+				lval(dueDayOf(memberId, day))))
 				.fulfillReservationOf(memberId, isbnOf(copyId)));
 	}
 
@@ -110,21 +109,21 @@ public final class Library implements AutoCloseable {
 		if (!denials.isEmpty()) {
 			return Try.failure(new IllegalStateException(String.join("; ", denials)));
 		}
-		return Try.success(with(reservation(db, lval(resId), lval(isbn), lval(memberId), lval(day)).fact()));
+		return Try.success(with(reservation(db, lval(resId), lval(isbn), lval(memberId), lval(day))));
 	}
 
 	public Try<Library> cancelReservation(int resId) {
 		if (!hasLiveReservation(resId)) {
 			return Try.failure(new IllegalStateException("no reservation: " + resId));
 		}
-		return Try.success(with(cancelled(db, lval(resId)).fact()));
+		return Try.success(with(cancelled(db, lval(resId))));
 	}
 
 	public Try<Library> returnCopy(int loanId) {
 		if (!hasActiveLoan(loanId)) {
 			return Try.failure(new IllegalStateException("no active loan: " + loanId));
 		}
-		return Try.success(with(returned(db, lval(loanId)).fact()));
+		return Try.success(with(returned(db, lval(loanId))));
 	}
 
 	private String isbnOf(int copyId) {
@@ -145,7 +144,7 @@ public final class Library implements AutoCloseable {
 
 	private Library fulfillReservationOf(int memberId, String isbn) {
 		return reservationOf(memberId, isbn)
-				.map(r -> with(fulfilled(db, lval(r)).fact()))
+				.map(r -> with(fulfilled(db, lval(r))))
 				.orElse(this);
 	}
 
