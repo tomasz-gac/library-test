@@ -5,7 +5,7 @@ package com.tgac.library;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tgac.pldb.sql.CachingSqlFetch;
+import com.tgac.pldb.sql.SqlFetch;
 import com.tgac.pldb.sql.SerializableSource;
 import com.tgac.pldb.sql.Watermark;
 import com.tgac.pldb.transaction.AbstractTransaction;
@@ -111,7 +111,7 @@ public class PostgresCommitTest {
 	private static Library simulatedLibrary(String id) {
 		try {
 			return Library.over(AbstractTransaction.over(
-					Watermark.over(CachingSqlFetch.pinned(id, connect()),
+					Watermark.over(SqlFetch.pinned(id, connect()),
 							PostgresCommitTest::commitConnection)));
 		} catch (SQLException e) {
 			throw new IllegalStateException(e);
