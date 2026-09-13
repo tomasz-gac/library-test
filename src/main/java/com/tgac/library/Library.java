@@ -174,6 +174,11 @@ public final class Library implements AutoCloseable {
 		return values(rules.availableCopy(c, lval(isbn)).solve(c));
 	}
 
+	public List<Integer> activeLoansOf(int memberId) {
+		Unifiable<Integer> l = lvar();
+		return values(rules.activeLoan(l, lvar(), lval(memberId), lvar()).solve(l));
+	}
+
 	public List<Integer> overdueLoans(int today) {
 		Unifiable<Integer> l = lvar();
 		return values(rules.overdue(l, lval(today)).solve(l));
