@@ -15,7 +15,7 @@ public final class Schema {
 	/** A title in the catalog. */
 	public static Literal book(AnswerSource db, Unifiable<String> isbn,
 			Unifiable<String> title, Unifiable<String> author) {
-		return Literal.relation("book")
+		return Literal.relation(Schema.class, "book")
 				.arg("isbn", isbn).indexed()
 				.arg("title", title)
 				.arg("author", author).indexed()
@@ -24,7 +24,7 @@ public final class Schema {
 
 	/** A physical copy on the shelves. */
 	public static Literal copy(AnswerSource db, Unifiable<Integer> copyId, Unifiable<String> isbn) {
-		return Literal.relation("copy")
+		return Literal.relation(Schema.class, "copy")
 				.arg("copyId", copyId).indexed()
 				.arg("isbn", isbn).indexed()
 				.from(db);
@@ -33,7 +33,7 @@ public final class Schema {
 	/** A registered member and the tier they hold. */
 	public static Literal member(AnswerSource db, Unifiable<Integer> memberId, Unifiable<String> name,
 			Unifiable<String> tier) {
-		return Literal.relation("member")
+		return Literal.relation(Schema.class, "member")
 				.arg("memberId", memberId).indexed()
 				.arg("name", name)
 				.arg("tier", tier).indexed()
@@ -43,7 +43,7 @@ public final class Schema {
 	/** A membership tier's lending policy: how many loans, for how long. */
 	public static Literal tier(AnswerSource db, Unifiable<String> name, Unifiable<Integer> loanLimit,
 			Unifiable<Integer> loanDays) {
-		return Literal.relation("tier")
+		return Literal.relation(Schema.class, "tier")
 				.arg("name", name).indexed()
 				.arg("loanLimit", loanLimit)
 				.arg("loanDays", loanDays)
@@ -53,7 +53,7 @@ public final class Schema {
 	/** A checkout event; stays forever, returns are separate events. */
 	public static Literal loan(AnswerSource db, Unifiable<Integer> loanId, Unifiable<Integer> copyId,
 			Unifiable<Integer> memberId, Unifiable<Integer> dueDay) {
-		return Literal.relation("loan")
+		return Literal.relation(Schema.class, "loan")
 				.arg("loanId", loanId).indexed()
 				.arg("copyId", copyId).indexed()
 				.arg("memberId", memberId).indexed()
@@ -63,7 +63,7 @@ public final class Schema {
 
 	/** A return event closing a loan. */
 	public static Literal returned(AnswerSource db, Unifiable<Integer> loanId) {
-		return Literal.relation("returned")
+		return Literal.relation(Schema.class, "returned")
 				.arg("loanId", loanId).indexed()
 				.from(db);
 	}
@@ -71,7 +71,7 @@ public final class Schema {
 	/** A hold on a title; stays forever, cancellation and fulfillment are separate events. */
 	public static Literal reservation(AnswerSource db, Unifiable<Integer> resId, Unifiable<String> isbn,
 			Unifiable<Integer> memberId, Unifiable<Integer> day) {
-		return Literal.relation("reservation")
+		return Literal.relation(Schema.class, "reservation")
 				.arg("resId", resId).indexed()
 				.arg("isbn", isbn).indexed()
 				.arg("memberId", memberId).indexed()
@@ -81,14 +81,14 @@ public final class Schema {
 
 	/** A cancellation event closing a reservation. */
 	public static Literal cancelled(AnswerSource db, Unifiable<Integer> resId) {
-		return Literal.relation("cancelled")
+		return Literal.relation(Schema.class, "cancelled")
 				.arg("resId", resId).indexed()
 				.from(db);
 	}
 
 	/** A fulfillment event closing a reservation — its member checked the title out. */
 	public static Literal fulfilled(AnswerSource db, Unifiable<Integer> resId) {
-		return Literal.relation("fulfilled")
+		return Literal.relation(Schema.class, "fulfilled")
 				.arg("resId", resId).indexed()
 				.from(db);
 	}

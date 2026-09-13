@@ -38,7 +38,7 @@ final class Rules {
 	/** loan without a return event. */
 	Literal activeLoan(Unifiable<Integer> loanId, Unifiable<Integer> copyId,
 			Unifiable<Integer> memberId, Unifiable<Integer> dueDay) {
-		return Literal.relation("activeLoan")
+		return Literal.relation(Rules.class, "activeLoan")
 				.arg("loanId", loanId)
 				.arg("copyId", copyId)
 				.arg("memberId", memberId)
@@ -49,7 +49,7 @@ final class Rules {
 
 	/** copy not on loan: ¬∃ of activeLoan onto the copy, stated inline. */
 	Literal availableCopy(Unifiable<Integer> copyId, Unifiable<String> isbn) {
-		return Literal.relation("availableCopy")
+		return Literal.relation(Rules.class, "availableCopy")
 				.arg("copyId", copyId)
 				.arg("isbn", isbn)
 				.solving(copy(db, copyId, isbn)
@@ -59,7 +59,7 @@ final class Rules {
 	/** active loan whose due day lies strictly before the given day. */
 	Literal overdue(Unifiable<Integer> loanId, Unifiable<Integer> today) {
 		Unifiable<Integer> d = lvar();
-		return Literal.relation("overdue")
+		return Literal.relation(Rules.class, "overdue")
 				.arg("loanId", loanId)
 				.arg("day", today)
 				.solving(activeLoan(loanId, lvar(), lvar(), d).and(lss(d, today)));
@@ -69,7 +69,7 @@ final class Rules {
 	Literal loanPolicy(Unifiable<Integer> memberId, Unifiable<Integer> loanLimit,
 			Unifiable<Integer> loanDays) {
 		Unifiable<String> t = lvar();
-		return Literal.relation("loanPolicy")
+		return Literal.relation(Rules.class, "loanPolicy")
 				.arg("memberId", memberId)
 				.arg("loanLimit", loanLimit)
 				.arg("loanDays", loanDays)
@@ -86,7 +86,7 @@ final class Rules {
 	Literal dueDate(Unifiable<Integer> memberId, Unifiable<Integer> day,
 			Unifiable<Integer> dueDay) {
 		Unifiable<Integer> len = lvar();
-		return Literal.relation("dueDate")
+		return Literal.relation(Rules.class, "dueDate")
 				.arg("memberId", memberId)
 				.arg("day", day)
 				.arg("dueDay", dueDay)
@@ -97,7 +97,7 @@ final class Rules {
 	/** reservation without a cancellation or fulfillment event. */
 	Literal liveReservation(Unifiable<Integer> resId, Unifiable<String> isbn,
 			Unifiable<Integer> memberId, Unifiable<Integer> day) {
-		return Literal.relation("liveReservation")
+		return Literal.relation(Rules.class, "liveReservation")
 				.arg("resId", resId)
 				.arg("isbn", isbn)
 				.arg("memberId", memberId)
@@ -113,7 +113,7 @@ final class Rules {
 	 * needs the isbn ground at the probe.
 	 */
 	Literal queueHead(Unifiable<String> isbn, Unifiable<Integer> memberId) {
-		return Literal.relation("queueHead")
+		return Literal.relation(Rules.class, "queueHead")
 				.arg("isbn", isbn)
 				.arg("memberId", memberId)
 				.solving(defer(() -> {
@@ -131,7 +131,7 @@ final class Rules {
 	 */
 	Literal checkOutDenial(Unifiable<Integer> memberId, Unifiable<Integer> copyId,
 			Unifiable<String> reason) {
-		return Literal.relation("checkOutDenial")
+		return Literal.relation(Rules.class, "checkOutDenial")
 				.arg("memberId", memberId)
 				.arg("copyId", copyId)
 				.arg("reason", reason)
@@ -170,7 +170,7 @@ final class Rules {
 	/** The reserve policy's complement, same shape as checkOutDenial. */
 	Literal reserveDenial(Unifiable<Integer> memberId, Unifiable<String> isbn,
 			Unifiable<String> reason) {
-		return Literal.relation("reserveDenial")
+		return Literal.relation(Rules.class, "reserveDenial")
 				.arg("memberId", memberId)
 				.arg("isbn", isbn)
 				.arg("reason", reason)
