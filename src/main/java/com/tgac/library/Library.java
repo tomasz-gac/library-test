@@ -80,7 +80,7 @@ public final class Library implements AutoCloseable {
 	}
 
 	private Library with(Literal row) {
-		return new Library(db.withFacts(row).get());
+		return new Library(db.asserting(row).get());
 	}
 
 
