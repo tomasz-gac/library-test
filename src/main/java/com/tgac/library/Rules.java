@@ -3,14 +3,6 @@ package com.tgac.library;
 // ABOUTME: The derived relations (IDB) over one fact base — one method per rule,
 // ABOUTME: bodies in literal style: negation over events, argmin queues, denials.
 
-import static com.tgac.logic.finitedomain.FiniteDomain.geq;
-import static com.tgac.logic.projection.Projection.project;
-import static com.tgac.logic.finitedomain.FiniteDomain.lss;
-import static com.tgac.logic.goals.Goal.defer;
-import static com.tgac.logic.nogoods.Exclusion.exclude;
-import static com.tgac.logic.unification.LVal.lval;
-import static com.tgac.logic.unification.LVar.lvar;
-
 import static com.tgac.library.Schema.book;
 import static com.tgac.library.Schema.cancelled;
 import static com.tgac.library.Schema.copy;
@@ -20,6 +12,12 @@ import static com.tgac.library.Schema.member;
 import static com.tgac.library.Schema.reservation;
 import static com.tgac.library.Schema.returned;
 import static com.tgac.library.Schema.tier;
+import static com.tgac.logic.finitedomain.FiniteDomain.geq;
+import static com.tgac.logic.finitedomain.FiniteDomain.lss;
+import static com.tgac.logic.goals.Goal.defer;
+import static com.tgac.logic.goals.Logic.project;
+import static com.tgac.logic.nogoods.Exclusion.exclude;
+import static com.tgac.logic.unification.LVar.lvar;
 import static com.tgac.pldb.relations.Projected.projected;
 
 import com.tgac.logic.aggregate.Aggregate;
@@ -44,7 +42,19 @@ final class Rules {
 				.arg("memberId", memberId)
 				.arg("dueDay", dueDay)
 				.solving(loan(db, loanId, copyId, memberId, dueDay)
-								.and(exclude(returned(db, loanId))));
+						.and(exclude(returned(db, loanId))));
+	}
+
+	/** loan WITH its return event — the spent cluster compaction may shed. */
+	Literal closedLoan(Unifiable<Integer> loanId, Unifiable<Integer> copyId,
+			Unifiable<Integer> memberId, Unifiable<Integer> dueDay) {
+		return Literal.relation(Rules.class, "closedLoan")
+				.arg("loanId", loanId)
+				.arg("copyId", copyId)
+				.arg("memberId", memberId)
+				.arg("dueDay", dueDay)
+				.solving(loan(db, loanId, copyId, memberId, dueDay)
+						.and(returned(db, loanId)));
 	}
 
 	/** copy not on loan: ¬∃ of activeLoan onto the copy, stated inline. */
@@ -53,7 +63,7 @@ final class Rules {
 				.arg("copyId", copyId)
 				.arg("isbn", isbn)
 				.solving(copy(db, copyId, isbn)
-								.and(exclude(activeLoan(projected(), copyId, projected(), projected()))));
+						.and(exclude(activeLoan(projected(), copyId, projected(), projected()))));
 	}
 
 	/** active loan whose due day lies strictly before the given day. */
@@ -74,7 +84,7 @@ final class Rules {
 				.arg("loanLimit", loanLimit)
 				.arg("loanDays", loanDays)
 				.solving(member(db, memberId, lvar(), t)
-								.and(tier(db, t, loanLimit, loanDays)));
+						.and(tier(db, t, loanLimit, loanDays)));
 	}
 
 	/**
@@ -91,7 +101,7 @@ final class Rules {
 				.arg("day", day)
 				.arg("dueDay", dueDay)
 				.solving(loanPolicy(memberId, lvar(), len)
-								.and(project(day, len, (d, l) -> dueDay.unifies(d + l))));
+						.and(project(day, len, (d, l) -> dueDay.unifies(d + l))));
 	}
 
 	/** reservation without a cancellation or fulfillment event. */
@@ -103,8 +113,8 @@ final class Rules {
 				.arg("memberId", memberId)
 				.arg("day", day)
 				.solving(reservation(db, resId, isbn, memberId, day)
-								.and(exclude(cancelled(db, resId)))
-								.and(exclude(fulfilled(db, resId))));
+						.and(exclude(cancelled(db, resId)))
+						.and(exclude(fulfilled(db, resId))));
 	}
 
 	/**
@@ -136,35 +146,35 @@ final class Rules {
 				.arg("copyId", copyId)
 				.arg("reason", reason)
 				.solving(exclude(member(db, memberId, projected(), projected()))
-								.and(reason.unifies("not a member"))
-								.or(exclude(copy(db, copyId, projected()))
-										.and(reason.unifies("no such copy")))
-								.or(member(db, memberId, projected(), projected())
-										.and(exclude(loanPolicy(memberId, projected(), projected())))
-										.and(reason.unifies("no loan policy")))
-								.or(defer(() -> {
-									Unifiable<String> i = lvar();
-									return copy(db, copyId, i)
-											.and(exclude(availableCopy(copyId, i)))
-											.and(reason.unifies("copy not available"));
-								}))
-								.or(defer(() -> {
-									Unifiable<Integer> n = lvar();
-									Unifiable<Integer> limit = lvar();
-									return loanPolicy(memberId, limit, lvar())
-											.and(Aggregate.<Integer>count(
-													l -> activeLoan(l, lvar(), memberId, lvar()), n))
-											.and(geq(n, limit))
-											.and(reason.unifies("at loan limit"));
-								}))
-								.or(defer(() -> {
-									Unifiable<String> i = lvar();
-									Unifiable<Integer> h = lvar();
-									return copy(db, copyId, i)
-											.and(queueHead(i, h))
-											.and(exclude(h.unifies(memberId)))
-											.and(reason.unifies("title held for another member"));
-								})));
+						.and(reason.unifies("not a member"))
+						.or(exclude(copy(db, copyId, projected()))
+								.and(reason.unifies("no such copy")))
+						.or(member(db, memberId, projected(), projected())
+								.and(exclude(loanPolicy(memberId, projected(), projected())))
+								.and(reason.unifies("no loan policy")))
+						.or(defer(() -> {
+							Unifiable<String> i = lvar();
+							return copy(db, copyId, i)
+									.and(exclude(availableCopy(copyId, i)))
+									.and(reason.unifies("copy not available"));
+						}))
+						.or(defer(() -> {
+							Unifiable<Integer> n = lvar();
+							Unifiable<Integer> limit = lvar();
+							return loanPolicy(memberId, limit, lvar())
+									.and(Aggregate.<Integer> count(
+											l -> activeLoan(l, lvar(), memberId, lvar()), n))
+									.and(geq(n, limit))
+									.and(reason.unifies("at loan limit"));
+						}))
+						.or(defer(() -> {
+							Unifiable<String> i = lvar();
+							Unifiable<Integer> h = lvar();
+							return copy(db, copyId, i)
+									.and(queueHead(i, h))
+									.and(exclude(h.unifies(memberId)))
+									.and(reason.unifies("title held for another member"));
+						})));
 	}
 
 	/** The reserve policy's complement, same shape as checkOutDenial. */
@@ -175,10 +185,10 @@ final class Rules {
 				.arg("isbn", isbn)
 				.arg("reason", reason)
 				.solving(exclude(member(db, memberId, projected(), projected()))
-								.and(reason.unifies("not a member"))
-								.or(exclude(book(db, isbn, projected(), projected()))
-										.and(reason.unifies("no such title")))
-								.or(liveReservation(lvar(), isbn, memberId, lvar())
-										.and(reason.unifies("already holds a reservation"))));
+						.and(reason.unifies("not a member"))
+						.or(exclude(book(db, isbn, projected(), projected()))
+								.and(reason.unifies("no such title")))
+						.or(liveReservation(lvar(), isbn, memberId, lvar())
+								.and(reason.unifies("already holds a reservation"))));
 	}
 }
