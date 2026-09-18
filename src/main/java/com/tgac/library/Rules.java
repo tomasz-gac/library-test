@@ -13,7 +13,6 @@ import static com.tgac.library.Schema.reservation;
 import static com.tgac.library.Schema.returned;
 import static com.tgac.library.Schema.tier;
 import static com.tgac.logic.goals.Goal.defer;
-import static com.tgac.logic.goals.Logic.project;
 import static com.tgac.logic.nogoods.Exclusion.exclude;
 import static com.tgac.logic.unification.LVar.lvar;
 import static com.tgac.pldb.relations.Projected.projected;
@@ -87,10 +86,9 @@ final class Rules {
 	}
 
 	/**
-	 * The loan's due day: the checkout day plus the member's tier length.
-	 * Mode-restricted: the sum is a projection, so day and length must
-	 * ground at the probe — addo cannot infer over unbounded ints (no
-	 * domain to record the result in; see NOTES entry 20).
+	 * The loan's due day: the checkout day plus the member's tier length —
+	 * a relation over the triple, so any position falls out of the other
+	 * two: the due day from the checkout, or the checkout from the due day.
 	 */
 	Literal dueDate(Unifiable<Integer> memberId, Unifiable<Integer> day,
 			Unifiable<Integer> dueDay) {
@@ -100,7 +98,7 @@ final class Rules {
 				.arg("day", day)
 				.arg("dueDay", dueDay)
 				.solving(loanPolicy(memberId, lvar(), len)
-						.and(project(day, len, (d, l) -> dueDay.unifies(d + l))));
+						.and(Ints.addo(day, len, dueDay)));
 	}
 
 	/** reservation without a cancellation or fulfillment event. */

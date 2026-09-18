@@ -3,8 +3,17 @@ package com.tgac.library;
 // ABOUTME: Lending policy: overdue = due-day before today (FD comparison over
 // ABOUTME: the derived loans), borrow limit = count of active loans per member.
 
+import static com.tgac.logic.unification.LVal.lval;
+import static com.tgac.logic.unification.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tgac.logic.unification.Reified;
+import com.tgac.logic.unification.Unifiable;
+import com.tgac.pldb.inmemory.SharedDatabase;
+import com.tgac.pldb.transaction.AbstractTransaction;
+import com.tgac.pldb.transaction.Transaction;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.Test;
 
 public class PolicyTest {
@@ -19,6 +28,23 @@ public class PolicyTest {
 				.withCopy(4, "978-0")
 				.withMember(100, "Ada", "standard")
 				.withMember(101, "Alan", "standard");
+	}
+
+	@Test
+	public void theCheckoutDayFallsOutOfTheDueDate() {
+		// day + loanDays = dueDay is a relation, not a projection: given the
+		// due day, the checkout day falls out backwards through the same rule
+		Transaction t0 = AbstractTransaction.over(SharedDatabase.empty().open("policy-backwards"));
+		Transaction t1 = t0.asserting(Schema.tier(t0, lval("standard"), lval(3), lval(14))).get();
+		Transaction t2 = t1.asserting(Schema.member(t1, lval(100), lval("Ada"), lval("standard"))).get();
+		Rules rules = new Rules(t2);
+
+		Unifiable<Integer> day = lvar();
+		List<Integer> days = rules.dueDate(lval(100), day, lval(44)).solve(day)
+				.map(Reified::get)
+				.collect(Collectors.toList());
+
+		assertThat(days).containsExactly(30);
 	}
 
 	@Test
