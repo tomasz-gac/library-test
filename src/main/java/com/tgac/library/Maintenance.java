@@ -15,6 +15,7 @@ import com.tgac.pldb.transaction.AbstractTransaction;
 import com.tgac.pldb.transaction.Simulated;
 import com.tgac.pldb.transaction.Transaction;
 import io.vavr.control.Try;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -39,7 +40,7 @@ public final class Maintenance {
 			Unifiable<Integer> id = lvar();
 			Unifiable<Integer> copy = lvar();
 			Unifiable<Integer> member = lvar();
-			Unifiable<Integer> due = lvar();
+			Unifiable<LocalDate> due = lvar();
 			List<Answer> clusters = new BreadthFirstScheduler<>(Question.select(
 					rules.closedLoan(id, copy, member, due),
 					Schema.loan(null, id, copy, member, due),

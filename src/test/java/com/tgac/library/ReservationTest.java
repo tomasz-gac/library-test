@@ -3,6 +3,7 @@ package com.tgac.library;
 // ABOUTME: Reservations: a FIFO queue per title (argmin over reservation ids),
 // ABOUTME: held titles only lend to the queue head, checkout fulfills the hold.
 
+import static com.tgac.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
@@ -24,8 +25,8 @@ public class ReservationTest {
 	@Test
 	public void reservationsQueueInFifoOrder() {
 		Library lib = stocked()
-				.reserve(900, "978-0", 101, 3).get()
-				.reserve(901, "978-0", 100, 3).get();
+				.reserve(900, "978-0", 101, day(3)).get()
+				.reserve(901, "978-0", 100, day(3)).get();
 		assertThat(lib.nextInQueue("978-0")).isEqualTo(Optional.of(101));
 	}
 
@@ -36,43 +37,43 @@ public class ReservationTest {
 
 	@Test
 	public void aMemberHoldsOneReservationPerTitle() {
-		Library lib = stocked().reserve(900, "978-0", 101, 3).get();
-		assertThat(lib.reserve(901, "978-0", 101, 4).isFailure()).isTrue();
+		Library lib = stocked().reserve(900, "978-0", 101, day(3)).get();
+		assertThat(lib.reserve(901, "978-0", 101, day(4)).isFailure()).isTrue();
 	}
 
 	@Test
 	public void aReservedTitleIsHeldForTheQueueHead() {
-		Library lib = stocked().reserve(900, "978-0", 101, 3).get();
-		assertThat(lib.checkOut(500, 1, 100, 30).isFailure()).isTrue();
-		assertThat(lib.checkOut(500, 1, 101, 30).isSuccess()).isTrue();
+		Library lib = stocked().reserve(900, "978-0", 101, day(3)).get();
+		assertThat(lib.checkOut(500, 1, 100, day(30)).isFailure()).isTrue();
+		assertThat(lib.checkOut(500, 1, 101, day(30)).isSuccess()).isTrue();
 	}
 
 	@Test
 	public void checkoutFulfillsTheReservation() {
 		Library lib = stocked()
-				.reserve(900, "978-0", 101, 3).get()
-				.reserve(901, "978-0", 100, 4).get()
-				.checkOut(500, 1, 101, 30).get();
+				.reserve(900, "978-0", 101, day(3)).get()
+				.reserve(901, "978-0", 100, day(4)).get()
+				.checkOut(500, 1, 101, day(30)).get();
 		assertThat(lib.nextInQueue("978-0")).isEqualTo(Optional.of(100));
 	}
 
 	@Test
 	public void aClosedReservationDoesNotBlockANewOne() {
 		Library cancelled = stocked()
-				.reserve(900, "978-0", 101, 3).get()
+				.reserve(900, "978-0", 101, day(3)).get()
 				.cancelReservation(900).get();
-		assertThat(cancelled.reserve(901, "978-0", 101, 5).isSuccess()).isTrue();
+		assertThat(cancelled.reserve(901, "978-0", 101, day(5)).isSuccess()).isTrue();
 		Library fulfilled = stocked()
-				.reserve(900, "978-0", 101, 3).get()
-				.checkOut(500, 1, 101, 30).get();
-		assertThat(fulfilled.reserve(901, "978-0", 101, 5).isSuccess()).isTrue();
+				.reserve(900, "978-0", 101, day(3)).get()
+				.checkOut(500, 1, 101, day(30)).get();
+		assertThat(fulfilled.reserve(901, "978-0", 101, day(5)).isSuccess()).isTrue();
 	}
 
 	@Test
 	public void cancellingAdvancesTheQueue() {
 		Library lib = stocked()
-				.reserve(900, "978-0", 101, 3).get()
-				.reserve(901, "978-0", 100, 4).get()
+				.reserve(900, "978-0", 101, day(3)).get()
+				.reserve(901, "978-0", 100, day(4)).get()
 				.cancelReservation(900).get();
 		assertThat(lib.nextInQueue("978-0")).isEqualTo(Optional.of(100));
 	}

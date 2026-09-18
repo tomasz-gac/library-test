@@ -3,6 +3,7 @@ package com.tgac.library;
 // ABOUTME: Lending lifecycle: checkout makes a copy unavailable, return restores
 // ABOUTME: it — availability derived by negation over the loan/return events.
 
+import static com.tgac.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
@@ -23,48 +24,48 @@ public class LendingTest {
 	public void lendingMakesACopyUnavailable() {
 		Library lib = stocked();
 		assertThat(lib.availableCopies("978-0")).containsExactlyInAnyOrder(1, 2);
-		Library lent = lib.checkOut(500, 1, 100, 30).get();
+		Library lent = lib.checkOut(500, 1, 100, day(30)).get();
 		assertThat(lent.availableCopies("978-0")).containsExactlyInAnyOrder(2);
 	}
 
 	@Test
 	public void returningRestoresAvailability() {
 		Library lib = stocked()
-				.checkOut(500, 1, 100, 30).get()
+				.checkOut(500, 1, 100, day(30)).get()
 				.returnCopy(500).get();
 		assertThat(lib.availableCopies("978-0")).containsExactlyInAnyOrder(1, 2);
 	}
 
 	@Test
 	public void aLentCopyCannotBeLentAgain() {
-		Library lib = stocked().checkOut(500, 1, 100, 30).get();
-		assertThat(lib.checkOut(501, 1, 101, 40).isFailure()).isTrue();
+		Library lib = stocked().checkOut(500, 1, 100, day(30)).get();
+		assertThat(lib.checkOut(501, 1, 101, day(40)).isFailure()).isTrue();
 	}
 
 	@Test
 	public void aReturnedCopyCanBeLentAgain() {
 		Library lib = stocked()
-				.checkOut(500, 1, 100, 30).get()
+				.checkOut(500, 1, 100, day(30)).get()
 				.returnCopy(500).get();
-		assertThat(lib.checkOut(501, 1, 101, 40).isSuccess()).isTrue();
+		assertThat(lib.checkOut(501, 1, 101, day(40)).isSuccess()).isTrue();
 	}
 
 	@Test
 	public void returnRequiresAnActiveLoan() {
 		assertThat(stocked().returnCopy(999).isFailure()).isTrue();
 		Library returnedOnce = stocked()
-				.checkOut(500, 1, 100, 30).get()
+				.checkOut(500, 1, 100, day(30)).get()
 				.returnCopy(500).get();
 		assertThat(returnedOnce.returnCopy(500).isFailure()).isTrue();
 	}
 
 	@Test
 	public void checkOutRequiresARegisteredMember() {
-		assertThat(stocked().checkOut(500, 1, 999, 30).isFailure()).isTrue();
+		assertThat(stocked().checkOut(500, 1, 999, day(30)).isFailure()).isTrue();
 	}
 
 	@Test
 	public void checkOutRequiresAKnownCopy() {
-		assertThat(stocked().checkOut(500, 99, 100, 30).isFailure()).isTrue();
+		assertThat(stocked().checkOut(500, 99, 100, day(30)).isFailure()).isTrue();
 	}
 }

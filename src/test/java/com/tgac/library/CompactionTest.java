@@ -5,6 +5,7 @@ package com.tgac.library;
 
 import static com.tgac.logic.unification.LVal.lval;
 import static com.tgac.logic.unification.LVar.lvar;
+import static com.tgac.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tgac.logic.unification.Unifiable;
@@ -33,9 +34,9 @@ public class CompactionTest {
 				.withMember(100, "Ada", "standard")
 				.withMember(101, "Alan", "standard")
 				.commit().isSuccess()).isTrue();
-		assertThat(open(store, "lend-500").checkOut(500, 1, 100, 10).get()
+		assertThat(open(store, "lend-500").checkOut(500, 1, 100, day(10)).get()
 				.commit().isSuccess()).isTrue();
-		assertThat(open(store, "lend-501").checkOut(501, 2, 101, 10).get()
+		assertThat(open(store, "lend-501").checkOut(501, 2, 101, day(10)).get()
 				.commit().isSuccess()).isTrue();
 		assertThat(open(store, "return-500").returnCopy(500).get()
 				.commit().isSuccess()).isTrue();
@@ -91,7 +92,7 @@ public class CompactionTest {
 				.withCopy(1, "978-0")
 				.withMember(100, "Ada", "standard")
 				.commit().isSuccess()).isTrue();
-		assertThat(open(store, "lend").checkOut(500, 1, 100, 10).get()
+		assertThat(open(store, "lend").checkOut(500, 1, 100, day(10)).get()
 				.commit().isSuccess()).isTrue();
 
 		assertThat(Maintenance.compactClosedLoans(store).isSuccess()).isTrue();

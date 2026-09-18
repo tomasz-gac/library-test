@@ -10,6 +10,7 @@ import com.tgac.pldb.transaction.Footprint;
 import com.tgac.pldb.transaction.Pinned;
 import com.tgac.pldb.transaction.Simulated;
 import io.vavr.control.Try;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -52,7 +53,7 @@ public final class LibraryServer {
 
 	// -- POST faces: premise-certified commands --------------------------
 
-	public Try<Nothing> checkOut(int loanId, int copyId, int memberId, int day, Footprint premise) {
+	public Try<Nothing> checkOut(int loanId, int copyId, int memberId, LocalDate day, Footprint premise) {
 		return posting("checkout", premise,
 				library -> library.checkOut(loanId, copyId, memberId, day));
 	}

@@ -18,9 +18,11 @@ import static com.tgac.logic.unification.LVar.lvar;
 import static com.tgac.pldb.relations.Projected.projected;
 
 import com.tgac.logic.aggregate.Aggregate;
+import com.tgac.logic.finitedomain.Dates;
 import com.tgac.logic.finitedomain.Ints;
 import com.tgac.logic.unification.Unifiable;
 import com.tgac.pldb.AnswerSource;
+import java.time.LocalDate;
 import com.tgac.pldb.relations.Literal;
 
 final class Rules {
@@ -33,7 +35,7 @@ final class Rules {
 
 	/** loan without a return event. */
 	Literal activeLoan(Unifiable<Integer> loanId, Unifiable<Integer> copyId,
-			Unifiable<Integer> memberId, Unifiable<Integer> dueDay) {
+			Unifiable<Integer> memberId, Unifiable<LocalDate> dueDay) {
 		return Literal.relation(Rules.class, "activeLoan")
 				.arg("loanId", loanId)
 				.arg("copyId", copyId)
@@ -45,7 +47,7 @@ final class Rules {
 
 	/** loan WITH its return event — the spent cluster compaction may shed. */
 	Literal closedLoan(Unifiable<Integer> loanId, Unifiable<Integer> copyId,
-			Unifiable<Integer> memberId, Unifiable<Integer> dueDay) {
+			Unifiable<Integer> memberId, Unifiable<LocalDate> dueDay) {
 		return Literal.relation(Rules.class, "closedLoan")
 				.arg("loanId", loanId)
 				.arg("copyId", copyId)
@@ -65,17 +67,17 @@ final class Rules {
 	}
 
 	/** active loan whose due day lies strictly before the given day. */
-	Literal overdue(Unifiable<Integer> loanId, Unifiable<Integer> today) {
-		Unifiable<Integer> d = lvar();
+	Literal overdue(Unifiable<Integer> loanId, Unifiable<LocalDate> today) {
+		Unifiable<LocalDate> d = lvar();
 		return Literal.relation(Rules.class, "overdue")
 				.arg("loanId", loanId)
 				.arg("day", today)
-				.solving(activeLoan(loanId, lvar(), lvar(), d).and(Ints.lss(d, today)));
+				.solving(activeLoan(loanId, lvar(), lvar(), d).and(Dates.lss(d, today)));
 	}
 
 	/** The member's lending policy, read through their tier. */
 	Literal loanPolicy(Unifiable<Integer> memberId, Unifiable<Integer> loanLimit,
-			Unifiable<Integer> loanDays) {
+			Unifiable<Long> loanDays) {
 		Unifiable<String> t = lvar();
 		return Literal.relation(Rules.class, "loanPolicy")
 				.arg("memberId", memberId)
@@ -90,20 +92,20 @@ final class Rules {
 	 * a relation over the triple, so any position falls out of the other
 	 * two: the due day from the checkout, or the checkout from the due day.
 	 */
-	Literal dueDate(Unifiable<Integer> memberId, Unifiable<Integer> day,
-			Unifiable<Integer> dueDay) {
-		Unifiable<Integer> len = lvar();
+	Literal dueDate(Unifiable<Integer> memberId, Unifiable<LocalDate> day,
+			Unifiable<LocalDate> dueDay) {
+		Unifiable<Long> len = lvar();
 		return Literal.relation(Rules.class, "dueDate")
 				.arg("memberId", memberId)
 				.arg("day", day)
 				.arg("dueDay", dueDay)
 				.solving(loanPolicy(memberId, lvar(), len)
-						.and(Ints.addo(day, len, dueDay)));
+						.and(Dates.addo(day, len, dueDay)));
 	}
 
 	/** reservation without a cancellation or fulfillment event. */
 	Literal liveReservation(Unifiable<Integer> resId, Unifiable<String> isbn,
-			Unifiable<Integer> memberId, Unifiable<Integer> day) {
+			Unifiable<Integer> memberId, Unifiable<LocalDate> day) {
 		return Literal.relation(Rules.class, "liveReservation")
 				.arg("resId", resId)
 				.arg("isbn", isbn)

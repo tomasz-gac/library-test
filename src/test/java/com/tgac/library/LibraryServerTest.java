@@ -3,6 +3,7 @@ package com.tgac.library;
 // ABOUTME: The server receipts: pinned GETs carry their footprint, premised POSTs
 // ABOUTME: bounce when the client's world moved, denials stay the server's own.
 
+import static com.tgac.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tgac.functional.category.Nothing;
@@ -33,7 +34,7 @@ public class LibraryServerTest {
 				.withMember(SALLY, "Sally", "standard")
 				.withMember(WATCHER, "Watts", "standard")
 				.withMember(BOB, "Bob", "standard")
-				.checkOut(500, 1, SALLY, 1).get()
+				.checkOut(500, 1, SALLY, day(1)).get()
 				.commit().isSuccess()).isTrue();
 		return world;
 	}
@@ -45,7 +46,7 @@ public class LibraryServerTest {
 		Pinned<List<Integer>> available = server.availableCopies("978-1");
 		assertThat(available.getValue()).containsExactly(2);
 
-		assertThat(server.checkOut(501, 2, WATCHER, 2, (Footprint) available.getPin())
+		assertThat(server.checkOut(501, 2, WATCHER, day(2), (Footprint) available.getPin())
 				.isSuccess()).isTrue();
 		assertThat(server.availableCopies("978-1").getValue()).isEmpty();
 	}
@@ -63,19 +64,19 @@ public class LibraryServerTest {
 
 		// Bob's unrelated checkout lands in between — different member,
 		// different copy — and still moves the loan relation's world
-		assertThat(server.checkOut(501, 2, BOB, 2, Footprint.empty()).isSuccess()).isTrue();
+		assertThat(server.checkOut(501, 2, BOB, day(2), Footprint.empty()).isSuccess()).isTrue();
 
 		// the conditional lend: copy 1 only if Sally lent nothing since the
 		// poll — the premise is stale at RELATION grain (Bob's loan moved
 		// it), the deliberate coarseness of the in-memory marks
-		Try<Nothing> refused = server.checkOut(502, 1, WATCHER, 2, (Footprint) sallys.getPin());
+		Try<Nothing> refused = server.checkOut(502, 1, WATCHER, day(2), (Footprint) sallys.getPin());
 		assertThat(refused.isFailure()).isTrue();
 		assertThat(refused.getCause()).isInstanceOf(Transaction.Conflict.class);
 
 		// re-poll, re-decide, retry: the fresh premise lands
 		Pinned<List<Integer>> fresh = server.activeLoansOf(SALLY);
 		assertThat(fresh.getValue()).isEmpty();
-		assertThat(server.checkOut(502, 1, WATCHER, 2, (Footprint) fresh.getPin())
+		assertThat(server.checkOut(502, 1, WATCHER, day(2), (Footprint) fresh.getPin())
 				.isSuccess()).isTrue();
 	}
 
@@ -86,7 +87,7 @@ public class LibraryServerTest {
 		// a perfectly fresh premise cannot buy a copy that is actively lent:
 		// the denial is the validation solve's, not the certify's
 		Pinned<List<Integer>> fresh = server.activeLoansOf(SALLY);
-		Try<Nothing> denied = server.checkOut(503, 1, WATCHER, 2, (Footprint) fresh.getPin());
+		Try<Nothing> denied = server.checkOut(503, 1, WATCHER, day(2), (Footprint) fresh.getPin());
 		assertThat(denied.isFailure()).isTrue();
 		assertThat(denied.getCause())
 				.isNotInstanceOf(Transaction.Conflict.class)

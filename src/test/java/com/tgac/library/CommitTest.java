@@ -3,6 +3,7 @@ package com.tgac.library;
 // ABOUTME: The library over a transaction: commits persist across reopenings, and
 // ABOUTME: the double checkout meets the conflict and re-solves to an ordinary denial.
 
+import static com.tgac.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tgac.pldb.inmemory.SharedDatabase;
@@ -34,17 +35,17 @@ public class CommitTest {
 		SharedDatabase store = stockedStore();
 		Library lending = open(store, "lend");
 		assertThat(lending.availableCopies("978-0")).containsExactly(1);
-		assertThat(lending.checkOut(500, 1, 100, 10).get().commit().isSuccess()).isTrue();
+		assertThat(lending.checkOut(500, 1, 100, day(10)).get().commit().isSuccess()).isTrue();
 
 		Library after = open(store, "after");
 		assertThat(after.availableCopies("978-0")).isEmpty();
-		assertThat(after.overdueLoans(25)).containsExactly(500);
+		assertThat(after.overdueLoans(day(25))).containsExactly(500);
 	}
 
 	@Test
 	public void anAbandonedLibraryLeavesNoTrace() {
 		SharedDatabase store = stockedStore();
-		open(store, "abandoned").checkOut(500, 1, 100, 10).get();
+		open(store, "abandoned").checkOut(500, 1, 100, day(10)).get();
 
 		assertThat(open(store, "after").availableCopies("978-0")).containsExactly(1);
 	}
@@ -56,8 +57,8 @@ public class CommitTest {
 		// commit wins, the second is REFUSED at commit — and the re-solve
 		// turns the anomaly into an ordinary named denial
 		SharedDatabase store = stockedStore();
-		Library ada = open(store, "ada").checkOut(500, 1, 100, 10).get();
-		Library alan = open(store, "alan").checkOut(501, 1, 101, 10).get();
+		Library ada = open(store, "ada").checkOut(500, 1, 100, day(10)).get();
+		Library alan = open(store, "alan").checkOut(501, 1, 101, day(10)).get();
 
 		assertThat(ada.commit().isSuccess()).isTrue();
 		Try<?> refused = alan.commit();

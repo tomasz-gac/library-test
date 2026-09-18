@@ -5,6 +5,7 @@ package com.tgac.library;
 
 import com.tgac.logic.unification.Unifiable;
 import com.tgac.pldb.AnswerSource;
+import java.time.LocalDate;
 import com.tgac.pldb.relations.Literal;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -42,7 +43,7 @@ public final class Schema {
 
 	/** A membership tier's lending policy: how many loans, for how long. */
 	public static Literal tier(AnswerSource db, Unifiable<String> name, Unifiable<Integer> loanLimit,
-			Unifiable<Integer> loanDays) {
+			Unifiable<Long> loanDays) {
 		return Literal.relation(Schema.class, "tier")
 				.arg("name", name).indexed()
 				.arg("loanLimit", loanLimit)
@@ -52,7 +53,7 @@ public final class Schema {
 
 	/** A checkout event; stays forever, returns are separate events. */
 	public static Literal loan(AnswerSource db, Unifiable<Integer> loanId, Unifiable<Integer> copyId,
-			Unifiable<Integer> memberId, Unifiable<Integer> dueDay) {
+			Unifiable<Integer> memberId, Unifiable<LocalDate> dueDay) {
 		return Literal.relation(Schema.class, "loan")
 				.arg("loanId", loanId).indexed()
 				.arg("copyId", copyId).indexed()
@@ -70,7 +71,7 @@ public final class Schema {
 
 	/** A hold on a title; stays forever, cancellation and fulfillment are separate events. */
 	public static Literal reservation(AnswerSource db, Unifiable<Integer> resId, Unifiable<String> isbn,
-			Unifiable<Integer> memberId, Unifiable<Integer> day) {
+			Unifiable<Integer> memberId, Unifiable<LocalDate> day) {
 		return Literal.relation(Schema.class, "reservation")
 				.arg("resId", resId).indexed()
 				.arg("isbn", isbn).indexed()

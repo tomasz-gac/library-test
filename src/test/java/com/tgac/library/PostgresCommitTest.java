@@ -3,6 +3,8 @@ package com.tgac.library;
 // ABOUTME: The commit receipts against real PostgreSQL, on BOTH serializations —
 // ABOUTME: native (SSI) and simulated (watermark) — through the unchanged domain.
 
+import static com.tgac.library.Days.day;
+import static com.tgac.logic.unification.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tgac.pldb.sql.SqlFetch;
@@ -12,6 +14,9 @@ import com.tgac.pldb.transaction.AbstractTransaction;
 import com.tgac.pldb.transaction.Transaction;
 import io.vavr.control.Try;
 import java.sql.Connection;
+import java.time.LocalDate;
+import java.sql.Date;
+import com.tgac.pldb.sql.Codec;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -55,17 +60,17 @@ public class PostgresCommitTest {
 				ddl.execute("DROP TABLE IF EXISTS " + table);
 			}
 			ddl.execute("CREATE TABLE tier(name VARCHAR(32) NOT NULL,"
-					+ " loanLimit INT NOT NULL, loanDays INT NOT NULL)");
+					+ " loanLimit INT NOT NULL, loanDays BIGINT NOT NULL)");
 			ddl.execute("CREATE TABLE book(isbn VARCHAR(32) NOT NULL,"
 					+ " title VARCHAR(64) NOT NULL, author VARCHAR(64) NOT NULL)");
 			ddl.execute("CREATE TABLE copy(copyId INT NOT NULL, isbn VARCHAR(32) NOT NULL)");
 			ddl.execute("CREATE TABLE member(memberId INT NOT NULL,"
 					+ " name VARCHAR(64) NOT NULL, tier VARCHAR(32) NOT NULL)");
 			ddl.execute("CREATE TABLE loan(loanId INT NOT NULL, copyId INT NOT NULL,"
-					+ " memberId INT NOT NULL, dueDay INT NOT NULL)");
+					+ " memberId INT NOT NULL, dueDay DATE NOT NULL)");
 			ddl.execute("CREATE TABLE returned(loanId INT NOT NULL)");
 			ddl.execute("CREATE TABLE reservation(resId INT NOT NULL, isbn VARCHAR(32) NOT NULL,"
-					+ " memberId INT NOT NULL, day INT NOT NULL)");
+					+ " memberId INT NOT NULL, day DATE NOT NULL)");
 			ddl.execute("CREATE TABLE cancelled(resId INT NOT NULL)");
 			ddl.execute("CREATE TABLE fulfilled(resId INT NOT NULL)");
 			Watermark.schema(ddl);
@@ -99,10 +104,14 @@ public class PostgresCommitTest {
 
 	// -- the two serializations, same domain -----------------------------
 
+	/** DATE columns cross the wire as java.sql.Date; the value vocabulary is LocalDate. */
+	private static final Codec<LocalDate> AS_DATE =
+			Codec.of(LocalDate.class, Date.class, Date::valueOf, Date::toLocalDate);
+
 	private static Library nativeLibrary(String id) {
 		try {
-			return Library.over(AbstractTransaction.over(
-					SerializableSource.postgres(id, connect())));
+			return Library.over(AbstractTransaction.over(withDates(
+					SerializableSource.postgres(id, connect()))));
 		} catch (SQLException e) {
 			throw new IllegalStateException(e);
 		}
@@ -111,11 +120,21 @@ public class PostgresCommitTest {
 	private static Library simulatedLibrary(String id) {
 		try {
 			return Library.over(AbstractTransaction.over(
-					Watermark.over(SqlFetch.pinned(id, connect()),
+					Watermark.over(withDates(SqlFetch.pinned(id, connect())),
 							PostgresCommitTest::commitConnection)));
 		} catch (SQLException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	private static SerializableSource withDates(SerializableSource source) {
+		return source.withCodec(Schema.loan(null, lvar(), lvar(), lvar(), AS_DATE.arg()))
+				.withCodec(Schema.reservation(null, lvar(), lvar(), lvar(), AS_DATE.arg()));
+	}
+
+	private static SqlFetch withDates(SqlFetch source) {
+		return source.withCodec(Schema.loan(null, lvar(), lvar(), lvar(), AS_DATE.arg()))
+				.withCodec(Schema.reservation(null, lvar(), lvar(), lvar(), AS_DATE.arg()));
 	}
 
 	private static Connection commitConnection() {
@@ -142,17 +161,17 @@ public class PostgresCommitTest {
 		seed(library);
 		Library lending = library.apply("lend");
 		assertThat(lending.availableCopies("978-0")).containsExactly(1);
-		assertThat(lending.checkOut(500, 1, 100, 10).get().commit().isSuccess()).isTrue();
+		assertThat(lending.checkOut(500, 1, 100, day(10)).get().commit().isSuccess()).isTrue();
 
 		Library after = library.apply("after");
 		assertThat(after.availableCopies("978-0")).isEmpty();
-		assertThat(after.overdueLoans(25)).containsExactly(500);
+		assertThat(after.overdueLoans(day(25))).containsExactly(500);
 	}
 
 	private static void doubleCheckoutResolvesToADenial(Function<String, Library> library) {
 		seed(library);
-		Library ada = library.apply("ada").checkOut(500, 1, 100, 10).get();
-		Library alan = library.apply("alan").checkOut(501, 1, 101, 10).get();
+		Library ada = library.apply("ada").checkOut(500, 1, 100, day(10)).get();
+		Library alan = library.apply("alan").checkOut(501, 1, 101, day(10)).get();
 
 		assertThat(ada.commit().isSuccess()).isTrue();
 		Try<?> refused = alan.commit();

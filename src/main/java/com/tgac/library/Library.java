@@ -22,6 +22,7 @@ import com.tgac.pldb.relations.Literal;
 import com.tgac.pldb.transaction.AbstractTransaction;
 import com.tgac.pldb.transaction.Transaction;
 import io.vavr.control.Try;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -76,7 +77,7 @@ public final class Library implements AutoCloseable {
 	}
 
 	public Library withTier(String name, int loanLimit, int loanDays) {
-		return with(Schema.tier(db, lval(name), lval(loanLimit), lval(loanDays)));
+		return with(Schema.tier(db, lval(name), lval(loanLimit), lval((long) loanDays)));
 	}
 
 	private Library with(Literal row) {
@@ -86,7 +87,7 @@ public final class Library implements AutoCloseable {
 
 	// -- commands --------------------------------------------------------
 
-	public Try<Library> checkOut(int loanId, int copyId, int memberId, int day) {
+	public Try<Library> checkOut(int loanId, int copyId, int memberId, LocalDate day) {
 		List<String> denials = checkOutDenials(memberId, copyId);
 		if (!denials.isEmpty()) {
 			return Try.failure(new IllegalStateException(String.join("; ", denials)));
@@ -97,14 +98,14 @@ public final class Library implements AutoCloseable {
 	}
 
 	/** The due day the member's tier grants from the checkout day. */
-	private int dueDayOf(int memberId, int day) {
-		Unifiable<Integer> due = lvar();
+	private LocalDate dueDayOf(int memberId, LocalDate day) {
+		Unifiable<LocalDate> due = lvar();
 		return rules.dueDate(lval(memberId), lval(day), due).solve(due)
 				.findFirst().map(Reified::get)
 				.orElseThrow(() -> new IllegalStateException("no loan policy: " + memberId));
 	}
 
-	public Try<Library> reserve(int resId, String isbn, int memberId, int day) {
+	public Try<Library> reserve(int resId, String isbn, int memberId, LocalDate day) {
 		List<String> denials = reserveDenials(memberId, isbn);
 		if (!denials.isEmpty()) {
 			return Try.failure(new IllegalStateException(String.join("; ", denials)));
@@ -136,7 +137,7 @@ public final class Library implements AutoCloseable {
 	/** The member's live reservation for the title, by id. */
 	private Optional<Integer> reservationOf(int memberId, String isbn) {
 		Unifiable<Integer> r = lvar();
-		Unifiable<Integer> d = lvar();
+		Unifiable<LocalDate> d = lvar();
 		return rules.liveReservation(r, lval(isbn), lval(memberId), d)
 				.solve(r)
 				.findFirst().map(Reified::get);
@@ -151,14 +152,14 @@ public final class Library implements AutoCloseable {
 	private boolean hasLiveReservation(int resId) {
 		Unifiable<String> i = lvar();
 		Unifiable<Integer> m = lvar();
-		Unifiable<Integer> d = lvar();
+		Unifiable<LocalDate> d = lvar();
 		return rules.liveReservation(lval(resId), i, m, d).solve(i).findAny().isPresent();
 	}
 
 	private boolean hasActiveLoan(int loanId) {
 		Unifiable<Integer> c = lvar();
 		Unifiable<Integer> m = lvar();
-		Unifiable<Integer> d = lvar();
+		Unifiable<LocalDate> d = lvar();
 		return rules.activeLoan(lval(loanId), c, m, d).solve(c).findAny().isPresent();
 	}
 
@@ -179,7 +180,7 @@ public final class Library implements AutoCloseable {
 		return values(rules.activeLoan(l, lvar(), lval(memberId), lvar()).solve(l));
 	}
 
-	public List<Integer> overdueLoans(int today) {
+	public List<Integer> overdueLoans(LocalDate today) {
 		Unifiable<Integer> l = lvar();
 		return values(rules.overdue(l, lval(today)).solve(l));
 	}
