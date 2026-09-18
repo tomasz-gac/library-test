@@ -12,8 +12,6 @@ import static com.tgac.library.Schema.member;
 import static com.tgac.library.Schema.reservation;
 import static com.tgac.library.Schema.returned;
 import static com.tgac.library.Schema.tier;
-import static com.tgac.logic.finitedomain.FiniteDomain.geq;
-import static com.tgac.logic.finitedomain.FiniteDomain.lss;
 import static com.tgac.logic.goals.Goal.defer;
 import static com.tgac.logic.goals.Logic.project;
 import static com.tgac.logic.nogoods.Exclusion.exclude;
@@ -21,6 +19,7 @@ import static com.tgac.logic.unification.LVar.lvar;
 import static com.tgac.pldb.relations.Projected.projected;
 
 import com.tgac.logic.aggregate.Aggregate;
+import com.tgac.logic.finitedomain.Ints;
 import com.tgac.logic.unification.Unifiable;
 import com.tgac.pldb.AnswerSource;
 import com.tgac.pldb.relations.Literal;
@@ -72,7 +71,7 @@ final class Rules {
 		return Literal.relation(Rules.class, "overdue")
 				.arg("loanId", loanId)
 				.arg("day", today)
-				.solving(activeLoan(loanId, lvar(), lvar(), d).and(lss(d, today)));
+				.solving(activeLoan(loanId, lvar(), lvar(), d).and(Ints.lss(d, today)));
 	}
 
 	/** The member's lending policy, read through their tier. */
@@ -164,7 +163,7 @@ final class Rules {
 							return loanPolicy(memberId, limit, lvar())
 									.and(Aggregate.<Integer> count(
 											l -> activeLoan(l, lvar(), memberId, lvar()), n))
-									.and(geq(n, limit))
+									.and(Ints.geq(n, limit))
 									.and(reason.unifies("at loan limit"));
 						}))
 						.or(defer(() -> {
