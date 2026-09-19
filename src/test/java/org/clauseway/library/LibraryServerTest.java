@@ -1,17 +1,17 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The server receipts: pinned GETs carry their footprint, premised POSTs
 // ABOUTME: bounce when the client's world moved, denials stay the server's own.
 
-import static com.tgac.library.Days.day;
+import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tgac.functional.category.Nothing;
-import com.tgac.pldb.inmemory.SharedDatabase;
-import com.tgac.pldb.transaction.AbstractTransaction;
-import com.tgac.pldb.transaction.Footprint;
-import com.tgac.pldb.transaction.Pinned;
-import com.tgac.pldb.transaction.Transaction;
+import org.clauseway.functional.category.Nothing;
+import org.clauseway.pldb.inmemory.SharedDatabase;
+import org.clauseway.pldb.transaction.AbstractTransaction;
+import org.clauseway.pldb.transaction.Footprint;
+import org.clauseway.pldb.transaction.Pinned;
+import org.clauseway.pldb.transaction.Transaction;
 import io.vavr.control.Try;
 import java.util.List;
 import org.junit.Test;

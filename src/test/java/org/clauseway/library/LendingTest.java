@@ -1,9 +1,9 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: Lending lifecycle: checkout makes a copy unavailable, return restores
 // ABOUTME: it — availability derived by negation over the loan/return events.
 
-import static com.tgac.library.Days.day;
+import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;

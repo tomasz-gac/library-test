@@ -1,14 +1,14 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The library exposed server-ish: GET-shaped reads answer with their
 // ABOUTME: footprint attached, POST-shaped commands certify the client's premise.
 
-import com.tgac.functional.category.Nothing;
-import com.tgac.pldb.inmemory.SharedDatabase;
-import com.tgac.pldb.transaction.AbstractTransaction;
-import com.tgac.pldb.transaction.Footprint;
-import com.tgac.pldb.transaction.Pinned;
-import com.tgac.pldb.transaction.Simulated;
+import org.clauseway.functional.category.Nothing;
+import org.clauseway.pldb.inmemory.SharedDatabase;
+import org.clauseway.pldb.transaction.AbstractTransaction;
+import org.clauseway.pldb.transaction.Footprint;
+import org.clauseway.pldb.transaction.Pinned;
+import org.clauseway.pldb.transaction.Simulated;
 import io.vavr.control.Try;
 import java.time.LocalDate;
 import java.util.List;

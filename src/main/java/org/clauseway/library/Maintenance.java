@@ -1,19 +1,19 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The lifecycle face the domain facade deliberately lacks: compaction
 // ABOUTME: sheds closed loan clusters through the certified removal door.
 
-import static com.tgac.logic.unification.LVar.lvar;
+import static org.clauseway.logic.unification.LVar.lvar;
 
-import com.tgac.functional.category.Nothing;
-import com.tgac.functional.fibers.schedulers.BreadthFirstScheduler;
-import com.tgac.logic.unification.Unifiable;
-import com.tgac.pldb.inmemory.SharedDatabase;
-import com.tgac.pldb.relations.Answer;
-import com.tgac.pldb.relations.Question;
-import com.tgac.pldb.transaction.AbstractTransaction;
-import com.tgac.pldb.transaction.Simulated;
-import com.tgac.pldb.transaction.Transaction;
+import org.clauseway.functional.category.Nothing;
+import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
+import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.pldb.inmemory.SharedDatabase;
+import org.clauseway.pldb.relations.Answer;
+import org.clauseway.pldb.relations.Question;
+import org.clauseway.pldb.transaction.AbstractTransaction;
+import org.clauseway.pldb.transaction.Simulated;
+import org.clauseway.pldb.transaction.Transaction;
 import io.vavr.control.Try;
 import java.time.LocalDate;
 import java.util.List;

@@ -1,9 +1,9 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: Reservations: a FIFO queue per title (argmin over reservation ids),
 // ABOUTME: held titles only lend to the queue head, checkout fulfills the hold.
 
-import static com.tgac.library.Days.day;
+import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;

@@ -1,9 +1,9 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: Membership tiers: the loan limit and the loan length come from the
 // ABOUTME: member's tier — policy rows joined into the denial and the due day.
 
-import static com.tgac.library.Days.day;
+import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;

@@ -1,9 +1,9 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The denial relation: checkout policy as the enumeration of its own
 // ABOUTME: complement — every violated rule is a positive answer with a name.
 
-import static com.tgac.library.Days.day;
+import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;

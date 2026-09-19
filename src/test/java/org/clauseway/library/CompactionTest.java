@@ -1,17 +1,17 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: Compaction receipts: live queries answer identically across the shed,
 // ABOUTME: history shrinks deliberately, a pinned reader straddling it bounces.
 
-import static com.tgac.logic.unification.LVal.lval;
-import static com.tgac.logic.unification.LVar.lvar;
-import static com.tgac.library.Days.day;
+import static org.clauseway.logic.unification.LVal.lval;
+import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tgac.logic.unification.Unifiable;
-import com.tgac.pldb.inmemory.SharedDatabase;
-import com.tgac.pldb.transaction.AbstractTransaction;
-import com.tgac.pldb.transaction.Transaction;
+import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.pldb.inmemory.SharedDatabase;
+import org.clauseway.pldb.transaction.AbstractTransaction;
+import org.clauseway.pldb.transaction.Transaction;
 import io.vavr.control.Try;
 import java.util.Collections;
 import java.util.List;

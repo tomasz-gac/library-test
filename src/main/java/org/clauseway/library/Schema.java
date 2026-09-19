@@ -1,12 +1,12 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The library's relational schema as function-shaped definitions — one
 // ABOUTME: method per base relation, names stated once, no relation constants.
 
-import com.tgac.logic.unification.Unifiable;
-import com.tgac.pldb.AnswerSource;
+import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.pldb.AnswerSource;
 import java.time.LocalDate;
-import com.tgac.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Literal;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

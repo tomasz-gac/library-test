@@ -1,4 +1,4 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The tests' calendar: the old day indices mapped onto real dates, so
 // ABOUTME: every arithmetic relationship between scenarios survives verbatim.

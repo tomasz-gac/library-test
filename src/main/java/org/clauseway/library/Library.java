@@ -1,26 +1,26 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The library domain facade — an immutable fact base with commands
 // ABOUTME: that append events and queries answered relationally by the engine.
 
-import static com.tgac.library.Schema.book;
-import static com.tgac.library.Schema.cancelled;
-import static com.tgac.library.Schema.copy;
-import static com.tgac.library.Schema.fulfilled;
-import static com.tgac.library.Schema.loan;
-import static com.tgac.library.Schema.member;
-import static com.tgac.library.Schema.reservation;
-import static com.tgac.library.Schema.returned;
-import static com.tgac.logic.unification.LVal.lval;
-import static com.tgac.logic.unification.LVar.lvar;
+import static org.clauseway.library.Schema.book;
+import static org.clauseway.library.Schema.cancelled;
+import static org.clauseway.library.Schema.copy;
+import static org.clauseway.library.Schema.fulfilled;
+import static org.clauseway.library.Schema.loan;
+import static org.clauseway.library.Schema.member;
+import static org.clauseway.library.Schema.reservation;
+import static org.clauseway.library.Schema.returned;
+import static org.clauseway.logic.unification.LVal.lval;
+import static org.clauseway.logic.unification.LVar.lvar;
 
-import com.tgac.functional.category.Nothing;
-import com.tgac.logic.unification.Reified;
-import com.tgac.logic.unification.Unifiable;
-import com.tgac.pldb.inmemory.SharedDatabase;
-import com.tgac.pldb.relations.Literal;
-import com.tgac.pldb.transaction.AbstractTransaction;
-import com.tgac.pldb.transaction.Transaction;
+import org.clauseway.functional.category.Nothing;
+import org.clauseway.logic.unification.Reified;
+import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.pldb.inmemory.SharedDatabase;
+import org.clauseway.pldb.relations.Literal;
+import org.clauseway.pldb.transaction.AbstractTransaction;
+import org.clauseway.pldb.transaction.Transaction;
 import io.vavr.control.Try;
 import java.time.LocalDate;
 import java.util.List;

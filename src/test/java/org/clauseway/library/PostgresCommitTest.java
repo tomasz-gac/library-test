@@ -1,22 +1,22 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The commit receipts against real PostgreSQL, on BOTH serializations —
 // ABOUTME: native (SSI) and simulated (watermark) — through the unchanged domain.
 
-import static com.tgac.library.Days.day;
-import static com.tgac.logic.unification.LVar.lvar;
+import static org.clauseway.library.Days.day;
+import static org.clauseway.logic.unification.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tgac.pldb.sql.SqlFetch;
-import com.tgac.pldb.sql.SerializableSource;
-import com.tgac.pldb.sql.Watermark;
-import com.tgac.pldb.transaction.AbstractTransaction;
-import com.tgac.pldb.transaction.Transaction;
+import org.clauseway.pldb.sql.SqlFetch;
+import org.clauseway.pldb.sql.SerializableSource;
+import org.clauseway.pldb.sql.Watermark;
+import org.clauseway.pldb.transaction.AbstractTransaction;
+import org.clauseway.pldb.transaction.Transaction;
 import io.vavr.control.Try;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.sql.Date;
-import com.tgac.pldb.sql.Codec;
+import org.clauseway.pldb.sql.Codec;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;

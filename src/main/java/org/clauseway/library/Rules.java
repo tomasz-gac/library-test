@@ -1,29 +1,29 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: The derived relations (IDB) over one fact base — one method per rule,
 // ABOUTME: bodies in literal style: negation over events, argmin queues, denials.
 
-import static com.tgac.library.Schema.book;
-import static com.tgac.library.Schema.cancelled;
-import static com.tgac.library.Schema.copy;
-import static com.tgac.library.Schema.fulfilled;
-import static com.tgac.library.Schema.loan;
-import static com.tgac.library.Schema.member;
-import static com.tgac.library.Schema.reservation;
-import static com.tgac.library.Schema.returned;
-import static com.tgac.library.Schema.tier;
-import static com.tgac.logic.goals.Goal.defer;
-import static com.tgac.logic.nogoods.Exclusion.exclude;
-import static com.tgac.logic.unification.LVar.lvar;
-import static com.tgac.pldb.relations.Projected.projected;
+import static org.clauseway.library.Schema.book;
+import static org.clauseway.library.Schema.cancelled;
+import static org.clauseway.library.Schema.copy;
+import static org.clauseway.library.Schema.fulfilled;
+import static org.clauseway.library.Schema.loan;
+import static org.clauseway.library.Schema.member;
+import static org.clauseway.library.Schema.reservation;
+import static org.clauseway.library.Schema.returned;
+import static org.clauseway.library.Schema.tier;
+import static org.clauseway.logic.goals.Goal.defer;
+import static org.clauseway.logic.nogoods.Exclusion.exclude;
+import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.pldb.relations.Projected.projected;
 
-import com.tgac.logic.aggregate.Aggregate;
-import com.tgac.logic.finitedomain.Dates;
-import com.tgac.logic.finitedomain.Ints;
-import com.tgac.logic.unification.Unifiable;
-import com.tgac.pldb.AnswerSource;
+import org.clauseway.logic.aggregate.Aggregate;
+import org.clauseway.logic.finitedomain.Dates;
+import org.clauseway.logic.finitedomain.Ints;
+import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.pldb.AnswerSource;
 import java.time.LocalDate;
-import com.tgac.pldb.relations.Literal;
+import org.clauseway.pldb.relations.Literal;
 
 final class Rules {
 

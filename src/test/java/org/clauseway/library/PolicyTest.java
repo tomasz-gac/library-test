@@ -1,18 +1,18 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: Lending policy: overdue = due-day before today (FD comparison over
 // ABOUTME: the derived loans), borrow limit = count of active loans per member.
 
-import static com.tgac.logic.unification.LVal.lval;
-import static com.tgac.logic.unification.LVar.lvar;
-import static com.tgac.library.Days.day;
+import static org.clauseway.logic.unification.LVal.lval;
+import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.tgac.logic.unification.Reified;
-import com.tgac.logic.unification.Unifiable;
-import com.tgac.pldb.inmemory.SharedDatabase;
-import com.tgac.pldb.transaction.AbstractTransaction;
-import com.tgac.pldb.transaction.Transaction;
+import org.clauseway.logic.unification.Reified;
+import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.pldb.inmemory.SharedDatabase;
+import org.clauseway.pldb.transaction.AbstractTransaction;
+import org.clauseway.pldb.transaction.Transaction;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;

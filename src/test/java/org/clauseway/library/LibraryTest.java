@@ -1,4 +1,4 @@
-package com.tgac.library;
+package org.clauseway.library;
 
 // ABOUTME: End-to-end domain tests for the library: catalog, inventory,
 // ABOUTME: membership — facts in, relational queries out.
