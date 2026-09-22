@@ -198,7 +198,7 @@ Library from convention into checked invariant — not simplicity. The
 finding worth keeping: entry 7's INSERT-only schema gives every relation a
 natural pin, its high-water mark (one indexed SELECT max() to check). But
 reuse must be iff-EQUAL, not monotone: derived relations negate, so an
-append can kill view rows — the log grows monotonically, the views don't.
+append can kill view answers — the log grows monotonically, the views don't.
 Exactly why Pin separates per-class reuse policy from leq. When the
 cross-request-reuse trigger fires, this domain is the easy case.
 
@@ -272,7 +272,7 @@ Tom's proposal: separate constraints-as-filters from domains-that-generate
 — it is the engine's one algebra surfacing at the store level. A domain is
 a compressed ⊕ (deferred branches; labelling = decompression); a filter is
 a ⊗ factor (kills or discharges, holds no branches; nogoods are the pure
-case); the conditional answer ⊕(t=r ⊗ C) is rows-as-generator,
+case); the conditional answer ⊕(t=r ⊗ C) is answers-as-generator,
 conditions-as-filter. Operational fossils of the unnamed split:
 verifier-last = filters-last; groundNarrowestFirst = the shared generator
 sweep; estimate ranks only generators, doomed is the guard's kill;
@@ -305,7 +305,7 @@ labelling, the MAX_VALUE pricing barrier. Static safety refuses whole
 rules; dynamic safety admits programs and refuses executions that reach an
 under-equipped door — more expressive, failures move to solve time, hence
 loud named refusals. Finiteness relocates rather than drops: Datalog-safe
-= finitely many ground tuples; engine-safe = finitely many symbolic rows —
+= finitely many ground tuples; engine-safe = finitely many symbolic answers —
 our unsafe is the infinite ANTICHAIN, and the condition-depth watchdog is
 its safety check. Entry 17's design amends: the generative face splits
 enumerable/symbolic; each refusing door declares its demand.
