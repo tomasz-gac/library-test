@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Transaction;
-import io.vavr.control.Try;
+import org.clauseway.vavr.control.Try;
 import org.junit.Test;
 
 public class CommitTest {

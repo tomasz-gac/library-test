@@ -14,7 +14,7 @@ import org.clauseway.pldb.relations.Question;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Simulated;
 import org.clauseway.pldb.transaction.Transaction;
-import io.vavr.control.Try;
+import org.clauseway.vavr.control.Try;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AccessLevel;

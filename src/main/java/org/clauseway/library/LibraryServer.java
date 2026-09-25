@@ -9,7 +9,7 @@ import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Footprint;
 import org.clauseway.pldb.transaction.Pinned;
 import org.clauseway.pldb.transaction.Simulated;
-import io.vavr.control.Try;
+import org.clauseway.vavr.control.Try;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;

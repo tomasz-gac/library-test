@@ -12,7 +12,7 @@ import org.clauseway.pldb.sql.SerializableSource;
 import org.clauseway.pldb.sql.Watermark;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Transaction;
-import io.vavr.control.Try;
+import org.clauseway.vavr.control.Try;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.sql.Date;

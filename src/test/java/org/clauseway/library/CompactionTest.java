@@ -13,7 +13,7 @@ import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Transaction;
-import io.vavr.control.Try;
+import org.clauseway.vavr.control.Try;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
