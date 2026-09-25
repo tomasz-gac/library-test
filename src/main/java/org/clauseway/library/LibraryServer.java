@@ -73,9 +73,11 @@ public final class LibraryServer {
 
 	private Try<Nothing> posting(String endpoint, Footprint premise,
 			Function<Library, Try<Library>> command) {
-		Simulated write = AbstractTransaction.over(world.open(request(endpoint))).requiring(premise);
-		try (Library library = Library.over(write)) {
-			return command.apply(library).flatMap(Library::commit);
+		try {
+			Simulated write = AbstractTransaction.over(world.open(request(endpoint))).requiring(premise);
+			try (Library library = Library.over(write)) {
+				return command.apply(library).flatMap(Library::commit);
+			}
 		} catch (Exception e) {
 			return Try.failure(e);
 		}
