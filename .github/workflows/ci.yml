@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: maven
+      - name: Build functional (matching branch, else its default)
+        run: |
+          git clone https://github.com/tomasz-gac/functional.git "$HOME/functional"
+          git -C "$HOME/functional" checkout "$GITHUB_REF_NAME" || true
+          mvn -B -ntp install -DskipTests -f "$HOME/functional/pom.xml"
+      - name: Build logic and clauseway-vavr (matching branch, else its default)
+        run: |
+          git clone https://github.com/tomasz-gac/logic.git "$HOME/logic"
+          git -C "$HOME/logic" checkout "$GITHUB_REF_NAME" || true
+          mvn -B -ntp install -f "$HOME/logic/vavr/pom.xml"
+          mvn -B -ntp install -DskipTests -f "$HOME/logic/pom.xml"
+      - name: Build pldb (matching branch, else its default)
+        run: |
+          git clone https://github.com/tomasz-gac/pldb.git "$HOME/pldb"
+          git -C "$HOME/pldb" checkout "$GITHUB_REF_NAME" || true
+          mvn -B -ntp install -DskipTests -f "$HOME/pldb/pom.xml"
+      - name: Test
+        run: mvn -B -ntp test
