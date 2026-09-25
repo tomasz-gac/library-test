@@ -37,8 +37,8 @@ public class PolicyTest {
 		// day + loanDays = dueDay is a relation, not a projection: given the
 		// due day, the checkout day falls out backwards through the same rule
 		Transaction t0 = AbstractTransaction.over(SharedDatabase.empty().open("policy-backwards"));
-		Transaction t1 = t0.asserting(Schema.tier(t0, lval("standard"), lval(3), lval(14L))).get();
-		Transaction t2 = t1.asserting(Schema.member(t1, lval(100), lval("Ada"), lval("standard"))).get();
+		Transaction t1 = t0.asserting(Schema.tier(t0, lval("standard"), lval(3), lval(14L)));
+		Transaction t2 = t1.asserting(Schema.member(t1, lval(100), lval("Ada"), lval("standard")));
 		Rules rules = new Rules(t2);
 
 		Unifiable<LocalDate> checkout = lvar();

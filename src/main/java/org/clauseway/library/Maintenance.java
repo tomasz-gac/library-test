@@ -45,7 +45,11 @@ public final class Maintenance {
 					rules.closedLoan(id, copy, member, due),
 					Schema.loan(null, id, copy, member, due),
 					Schema.returned(null, id))).get();
-			return tx.retracting(clusters).flatMap(Transaction::commit);
+			Transaction staged = tx.retracting(clusters);
+			return Try.of(() -> {
+				staged.commit();
+				return Nothing.nothing();
+			});
 		}
 	}
 }

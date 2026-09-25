@@ -7,6 +7,7 @@ import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
@@ -109,10 +110,8 @@ public class CompactionTest {
 
 		assertThat(Maintenance.compactClosedLoans(store).isSuccess()).isTrue();
 
-		Try<?> refused = reader.asserting(Collections.singletonList(
-				Schema.book(null, lval("978-9"), lval("Tar Pit"), lval("Moseley"))))
-				.get().commit();
-		assertThat(refused.getCause())
+				assertThatThrownBy(() -> reader.asserting(Collections.singletonList(
+				Schema.book(null, lval("978-9"), lval("Tar Pit"), lval("Moseley")))).commit())
 				.describedAs("the pinned loan region lost its cluster — the certified shed divides pins")
 				.isInstanceOf(Transaction.Conflict.class);
 	}

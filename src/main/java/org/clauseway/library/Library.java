@@ -53,7 +53,10 @@ public final class Library implements AutoCloseable {
 	 * failure means the world moved — reopen and re-solve.
 	 */
 	public Try<Nothing> commit() {
-		return db.commit();
+		return Try.of(() -> {
+			db.commit();
+			return Nothing.nothing();
+		});
 	}
 
 	/** Ends the transaction; every value of this lineage is spent with it. */
@@ -81,7 +84,7 @@ public final class Library implements AutoCloseable {
 	}
 
 	private Library with(Literal row) {
-		return new Library(db.asserting(row).get());
+		return new Library(db.asserting(row));
 	}
 
 
