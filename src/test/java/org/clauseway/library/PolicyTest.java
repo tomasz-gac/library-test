@@ -3,13 +3,13 @@ package org.clauseway.library;
 // ABOUTME: Lending policy: overdue = due-day before today (FD comparison over
 // ABOUTME: the derived loans), borrow limit = count of active loans per member.
 
-import static org.clauseway.logic.unification.LVal.lval;
-import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.logic.unification.terms.LVal.lval;
+import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.clauseway.logic.unification.Reified;
-import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.logic.unification.terms.Reified;
+import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Transaction;

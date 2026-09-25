@@ -3,12 +3,12 @@ package org.clauseway.library;
 // ABOUTME: Compaction receipts: live queries answer identically across the shed,
 // ABOUTME: history shrinks deliberately, a pinned reader straddling it bounces.
 
-import static org.clauseway.logic.unification.LVal.lval;
-import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.logic.unification.terms.LVal.lval;
+import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Transaction;

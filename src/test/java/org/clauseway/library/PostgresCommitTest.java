@@ -4,7 +4,7 @@ package org.clauseway.library;
 // ABOUTME: native (SSI) and simulated (watermark) — through the unchanged domain.
 
 import static org.clauseway.library.Days.day;
-import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.clauseway.pldb.sql.SqlFetch;

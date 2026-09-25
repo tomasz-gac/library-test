@@ -11,12 +11,12 @@ import static org.clauseway.library.Schema.loan;
 import static org.clauseway.library.Schema.member;
 import static org.clauseway.library.Schema.reservation;
 import static org.clauseway.library.Schema.returned;
-import static org.clauseway.logic.unification.LVal.lval;
-import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.logic.unification.terms.LVal.lval;
+import static org.clauseway.logic.unification.terms.LVar.lvar;
 
-import org.clauseway.functional.category.Nothing;
-import org.clauseway.logic.unification.Reified;
-import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.functional.Nothing;
+import org.clauseway.logic.unification.terms.Reified;
+import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.relations.Literal;
 import org.clauseway.pldb.transaction.AbstractTransaction;

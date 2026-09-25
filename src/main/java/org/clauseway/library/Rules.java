@@ -14,13 +14,13 @@ import static org.clauseway.library.Schema.returned;
 import static org.clauseway.library.Schema.tier;
 import static org.clauseway.logic.goals.Goal.defer;
 import static org.clauseway.logic.nogoods.Exclusion.exclude;
-import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.pldb.relations.Projected.projected;
 
 import org.clauseway.logic.aggregate.Aggregate;
 import org.clauseway.logic.finitedomain.Dates;
 import org.clauseway.logic.finitedomain.Ints;
-import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.AnswerSource;
 import java.time.LocalDate;
 import org.clauseway.pldb.relations.Literal;

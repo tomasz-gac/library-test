@@ -6,7 +6,7 @@ package org.clauseway.library;
 import static org.clauseway.library.Days.day;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.clauseway.functional.category.Nothing;
+import org.clauseway.functional.Nothing;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Footprint;

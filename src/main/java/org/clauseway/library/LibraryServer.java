@@ -3,7 +3,7 @@ package org.clauseway.library;
 // ABOUTME: The library exposed server-ish: GET-shaped reads answer with their
 // ABOUTME: footprint attached, POST-shaped commands certify the client's premise.
 
-import org.clauseway.functional.category.Nothing;
+import org.clauseway.functional.Nothing;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Footprint;

@@ -3,11 +3,11 @@ package org.clauseway.library;
 // ABOUTME: The lifecycle face the domain facade deliberately lacks: compaction
 // ABOUTME: sheds closed loan clusters through the certified removal door.
 
-import static org.clauseway.logic.unification.LVar.lvar;
+import static org.clauseway.logic.unification.terms.LVar.lvar;
 
-import org.clauseway.functional.category.Nothing;
+import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
-import org.clauseway.logic.unification.Unifiable;
+import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
 import org.clauseway.pldb.relations.Answer;
 import org.clauseway.pldb.relations.Question;
