@@ -9,7 +9,8 @@ import org.clauseway.functional.Nothing;
 import org.clauseway.functional.fibers.schedulers.BreadthFirstScheduler;
 import org.clauseway.logic.unification.terms.Unifiable;
 import org.clauseway.pldb.inmemory.SharedDatabase;
-import org.clauseway.pldb.relations.Answer;
+import org.clauseway.logic.solving.Answer;
+import org.clauseway.pldb.relations.Relation;
 import org.clauseway.pldb.relations.Question;
 import org.clauseway.pldb.transaction.AbstractTransaction;
 import org.clauseway.pldb.transaction.Simulated;
@@ -41,7 +42,7 @@ public final class Maintenance {
 			Unifiable<Integer> copy = lvar();
 			Unifiable<Integer> member = lvar();
 			Unifiable<LocalDate> due = lvar();
-			List<Answer> clusters = new BreadthFirstScheduler<>(Question.select(
+			List<Answer<Relation>> clusters = new BreadthFirstScheduler<>(Question.select(
 					rules.closedLoan(id, copy, member, due),
 					Schema.loan(null, id, copy, member, due),
 					Schema.returned(null, id))).get();

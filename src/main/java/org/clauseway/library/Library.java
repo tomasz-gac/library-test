@@ -3,6 +3,7 @@ package org.clauseway.library;
 // ABOUTME: The library domain facade — an immutable fact base with commands
 // ABOUTME: that append events and queries answered relationally by the engine.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.library.Schema.book;
 import static org.clauseway.library.Schema.cancelled;
 import static org.clauseway.library.Schema.copy;
@@ -103,7 +104,7 @@ public final class Library implements AutoCloseable {
 	/** The due day the member's tier grants from the checkout day. */
 	private LocalDate dueDayOf(int memberId, LocalDate day) {
 		Unifiable<LocalDate> due = lvar();
-		return rules.dueDate(lval(memberId), lval(day), due).solve(due)
+		return Query.of(rules.dueDate(lval(memberId), lval(day), due)).solve(due)
 				.findFirst().map(Reified::get)
 				.orElseThrow(() -> new IllegalStateException("no loan policy: " + memberId));
 	}
@@ -132,7 +133,7 @@ public final class Library implements AutoCloseable {
 
 	private String isbnOf(int copyId) {
 		Unifiable<String> i = lvar();
-		return copy(db, lval(copyId), i).solve(i)
+		return Query.of(copy(db, lval(copyId), i)).solve(i)
 				.findFirst().map(Reified::get)
 				.orElseThrow(() -> new IllegalStateException("no such copy: " + copyId));
 	}
@@ -141,8 +142,7 @@ public final class Library implements AutoCloseable {
 	private Optional<Integer> reservationOf(int memberId, String isbn) {
 		Unifiable<Integer> r = lvar();
 		Unifiable<LocalDate> d = lvar();
-		return rules.liveReservation(r, lval(isbn), lval(memberId), d)
-				.solve(r)
+		return Query.of(rules.liveReservation(r, lval(isbn), lval(memberId), d)).solve(r)
 				.findFirst().map(Reified::get);
 	}
 
@@ -156,59 +156,59 @@ public final class Library implements AutoCloseable {
 		Unifiable<String> i = lvar();
 		Unifiable<Integer> m = lvar();
 		Unifiable<LocalDate> d = lvar();
-		return rules.liveReservation(lval(resId), i, m, d).solve(i).findAny().isPresent();
+		return Query.of(rules.liveReservation(lval(resId), i, m, d)).solve(i).findAny().isPresent();
 	}
 
 	private boolean hasActiveLoan(int loanId) {
 		Unifiable<Integer> c = lvar();
 		Unifiable<Integer> m = lvar();
 		Unifiable<LocalDate> d = lvar();
-		return rules.activeLoan(lval(loanId), c, m, d).solve(c).findAny().isPresent();
+		return Query.of(rules.activeLoan(lval(loanId), c, m, d)).solve(c).findAny().isPresent();
 	}
 
 	// -- the read side: relational queries -------------------------------
 
 	public List<Integer> copiesOf(String isbn) {
 		Unifiable<Integer> c = lvar();
-		return values(copy(db, c, lval(isbn)).solve(c));
+		return values(Query.of(copy(db, c, lval(isbn))).solve(c));
 	}
 
 	public List<Integer> availableCopies(String isbn) {
 		Unifiable<Integer> c = lvar();
-		return values(rules.availableCopy(c, lval(isbn)).solve(c));
+		return values(Query.of(rules.availableCopy(c, lval(isbn))).solve(c));
 	}
 
 	public List<Integer> activeLoansOf(int memberId) {
 		Unifiable<Integer> l = lvar();
-		return values(rules.activeLoan(l, lvar(), lval(memberId), lvar()).solve(l));
+		return values(Query.of(rules.activeLoan(l, lvar(), lval(memberId), lvar())).solve(l));
 	}
 
 	public List<Integer> overdueLoans(LocalDate today) {
 		Unifiable<Integer> l = lvar();
-		return values(rules.overdue(l, lval(today)).solve(l));
+		return values(Query.of(rules.overdue(l, lval(today))).solve(l));
 	}
 
 	public Optional<Integer> nextInQueue(String isbn) {
 		Unifiable<Integer> h = lvar();
-		return rules.queueHead(lval(isbn), h).solve(h).findFirst().map(Reified::get);
+		return Query.of(rules.queueHead(lval(isbn), h)).solve(h).findFirst().map(Reified::get);
 	}
 
 	/** Every rule the checkout would violate, by name; empty means allowed. */
 	public List<String> checkOutDenials(int memberId, int copyId) {
 		Unifiable<String> r = lvar();
-		return values(rules.checkOutDenial(lval(memberId), lval(copyId), r).solve(r));
+		return values(Query.of(rules.checkOutDenial(lval(memberId), lval(copyId), r)).solve(r));
 	}
 
 	/** Every rule the reservation would violate, by name; empty means allowed. */
 	public List<String> reserveDenials(int memberId, String isbn) {
 		Unifiable<String> r = lvar();
-		return values(rules.reserveDenial(lval(memberId), lval(isbn), r).solve(r));
+		return values(Query.of(rules.reserveDenial(lval(memberId), lval(isbn), r)).solve(r));
 	}
 
 	public List<String> titlesBy(String author) {
 		Unifiable<String> t = lvar();
 		Unifiable<String> i = lvar();
-		return values(book(db, i, t, lval(author)).solve(t));
+		return values(Query.of(book(db, i, t, lval(author))).solve(t));
 	}
 
 	private static <T> List<T> values(Stream<Reified<T>> answers) {

@@ -3,6 +3,7 @@ package org.clauseway.library;
 // ABOUTME: Compaction receipts: live queries answer identically across the shed,
 // ABOUTME: history shrinks deliberately, a pinned reader straddling it bounces.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.library.Days.day;
@@ -47,7 +48,7 @@ public class CompactionTest {
 	private static long loanEvents(SharedDatabase store) throws Exception {
 		try (Transaction reader = AbstractTransaction.over(store.open("count-loans"))) {
 			Unifiable<Integer> id = lvar();
-			return Schema.loan(reader, id, lvar(), lvar(), lvar()).solve(id).count();
+			return Query.of(Schema.loan(reader, id, lvar(), lvar(), lvar())).solve(id).count();
 		}
 	}
 
@@ -105,7 +106,7 @@ public class CompactionTest {
 		SharedDatabase store = storeWithOneClosedLoan();
 		Transaction reader = AbstractTransaction.over(store.open("reader"));
 		Unifiable<Integer> id = lvar();
-		assertThat(Schema.loan(reader, id, lvar(), lvar(), lvar()).solve(id).count())
+		assertThat(Query.of(Schema.loan(reader, id, lvar(), lvar(), lvar())).solve(id).count())
 				.isEqualTo(2);
 
 		assertThat(Maintenance.compactClosedLoans(store).isSuccess()).isTrue();

@@ -3,6 +3,7 @@ package org.clauseway.library;
 // ABOUTME: Lending policy: overdue = due-day before today (FD comparison over
 // ABOUTME: the derived loans), borrow limit = count of active loans per member.
 
+import org.clauseway.logic.solving.Query;
 import static org.clauseway.logic.unification.terms.LVal.lval;
 import static org.clauseway.logic.unification.terms.LVar.lvar;
 import static org.clauseway.library.Days.day;
@@ -42,7 +43,7 @@ public class PolicyTest {
 		Rules rules = new Rules(t2);
 
 		Unifiable<LocalDate> checkout = lvar();
-		List<LocalDate> checkouts = rules.dueDate(lval(100), checkout, lval(day(44))).solve(checkout)
+		List<LocalDate> checkouts = Query.of(rules.dueDate(lval(100), checkout, lval(day(44)))).solve(checkout)
 				.map(Reified::get)
 				.collect(Collectors.toList());
 
